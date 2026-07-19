@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: 'Manrope', system-ui, sans-serif; background: #F3F1EC; color: #23201D; -webkit-font-smoothing: antialiased; }
+  input, select, textarea, button { font-family: inherit; color: inherit; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: #D8D3CA; border-radius: 8px; border: 2px solid #F3F1EC; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  a { color: #DA5B18; text-decoration: none; }
+  a:hover { color: #B84812; }
+  input:focus, select:focus, textarea:focus { outline: none; }
+  @keyframes vmfade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media print {
+    aside, header, button, select { display: none !important; }
+    [style*="100vh"] { height: auto !important; overflow: visible !important; }
+    main { overflow: visible !important; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</helmet>
+<div style="display:flex; height:100vh; width:100%; overflow:hidden; background:#F3F1EC;">
+
+  <aside style="width:256px; flex:0 0 256px; background:#211E1B; color:#C9C3BA; display:flex; flex-direction:column; height:100vh;">
+    <div style="padding:22px 22px 18px; display:flex; align-items:center; gap:11px; border-bottom:1px solid #322E2A;">
+      <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#E8631A,#C4432B); display:flex; align-items:center; justify-content:center; flex:0 0 38px;">
+        <span style="font-family:'Space Grotesk'; font-weight:700; color:#fff; font-size:19px;">V</span>
+      </div>
+      <div style="line-height:1.15;">
+        <div style="font-weight:700; color:#F5F2ED; font-size:15px;">VM Pricing</div>
+        <div style="font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#8C857B; font-weight:600;">Intelligence</div>
+      </div>
+    </div>
+
+    <nav style="flex:1; padding:14px 12px; display:flex; flex-direction:column; gap:2px; overflow-y:auto;">
+      <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="6">
+        <button data-key="{{ item.key }}" onClick="{{ go }}" style="{{ item.style }}">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 19px;"><path d="{{ item.icon }}"></path></svg>
+          <span style="flex:1; text-align:left;">{{ item.label }}</span>
+        </button>
+      </sc-for>
+    </nav>
+
+    <div style="padding:14px; border-top:1px solid #322E2A;">
+      <div style="background:#2B2723; border-radius:12px; padding:13px 14px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px;">
+          <span style="width:7px; height:7px; border-radius:50%; background:{{ storageDot }};"></span>
+          <span style="font-size:11px; font-weight:700; color:#D9D3CA; letter-spacing:0.04em;">{{ storageLabel }}</span>
+        </div>
+        <p style="font-size:11px; line-height:1.5; color:#8C857B;">{{ storageDesc }}</p>
+      </div>
+    </div>
+  </aside>
+
+  <div style="flex:1; display:flex; flex-direction:column; height:100vh; overflow:hidden;">
+    <header style="height:64px; flex:0 0 64px; background:#FBFAF7; border-bottom:1px solid #E7E3DC; display:flex; align-items:center; justify-content:space-between; padding:0 28px;">
+      <div>
+        <div style="font-size:16px; font-weight:700; color:#23201D;">{{ viewTitle }}</div>
+        <div style="font-size:12px; color:#8C857B; font-weight:500;">{{ viewSubtitle }}</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <button onClick="{{ startNew }}" style="display:flex; align-items:center; gap:7px; background:#DA5B18; color:#fff; border:none; padding:9px 15px; border-radius:9px; font-weight:700; font-size:13px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.08);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+          Nova precificação
+        </button>
+        <div style="width:1px; height:28px; background:#E7E3DC;"></div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="text-align:right; line-height:1.2;">
+            <div style="font-size:13px; font-weight:700; color:#23201D;">{{ roleName }}</div>
+            <select data-path="__role" onChange="{{ onFieldInput }}" value="{{ role }}" style="font-size:11px; color:#8C857B; border:none; background:transparent; cursor:pointer; font-weight:600; text-align:right;">
+              <option value="admin">Administrador Revenue</option>
+              <option value="financeiro">Financeiro</option>
+              <option value="diretor">Diretor de unidade</option>
+              <option value="comercial">Comercial</option>
+              <option value="executivo">Visualizador executivo</option>
+            </select>
+          </div>
+          <div style="width:38px; height:38px; border-radius:50%; background:#EDE7DE; display:flex; align-items:center; justify-content:center; font-weight:700; color:#7A736A; font-size:14px;">{{ roleInitials }}</div>
+        </div>
+      </div>
+    </header>
+
+    <main style="flex:1; overflow-y:auto; overflow-x:hidden;">
+      <div style="animation:vmfade 0.3s ease;" key="{{ view }}">
+
+        <!-- ============ PAINEL ============ -->
+        <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:26px 30px 48px; max-width:1240px;">
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:14px;">
+              <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+                <div style="background:#FBFAF7; border:1px solid #E7E3DC; border-radius:14px; padding:17px 18px;">
+                  <div style="font-size:12px; color:#8C857B; font-weight:600; margin-bottom:9px;">{{ k.label }}</div>
+                  <div style="font-family:'Space Grotesk'; font-size:26px; font-weight:600; color:#23201D; letter-spacing:-0.01em;">{{ k.value }}</div>
+                  <div style="font-size:11.5px; font-weight:600; margin-top:5px; color:{{ k.deltaColor }};">{{ k.delta }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1.5fr 1fr; gap:14px; margin-bottom:14px;">
+              <div style="background:#FBFAF7; border:1px solid #E7E3DC; border-radius:14px; padding:20px 22px;">
+                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:18px;">
+                  <div style="font-size:14px; font-weight:700;">Preço recomendado × realizado</div>
+                  <div style="font-size:12px; color:#8C857B;">por solução · R$ mil</div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:15px;">
+                  <sc-for list="{{ solutionBars }}" as="b" hint-placeholder-count="5">
+                    <div>
+                      <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;"><span style="font-weight:600; color:#4A453E;">{{ b.name }}</span><span style="font-family:'Space Grotesk'; color:#8C857B;">{{ b.gapLabel }}</span></div>
+                      <div style="position:relative; height:20px;">
+                        <div style="position:absolute; inset:0; background:#EDE7DE; border-radius:6px;"></div>
+                        <div style="position:absolute; top:0; left:0; height:20px; width:{{ b.recPct }}%; background:#C6BFB4; border-radius:6px;"></div>
+                        <div style="position:absolute; top:3px; left:0; height:14px; width:{{ b.realPct }}%; background:linear-gradient(90deg,#DA5B18,#E8631A); border-radius:5px;"></div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:flex; gap:18px; margin-top:18px; font-size:11.5px; color:#8C857B;">
+                  <span style="display:flex; align-items:center; gap:6px;"><span style="width:11px; height:11px; border-radius:3px; background:#C6BFB4;"></span>Recomendado</span>
+                  <span style="display:flex; align-items:center; gap:6px;"><span style="width:11px; height:11px; border-radius:3px; background:#DA5B18;"></span>Realizado</span>
+                </div>
+              </div>
+
+              <div style="background:#FBFAF7; border:1px solid #E7E3DC; border-radius:14px; padding:20px 22px; display:flex; flex-direction:column;">
+                <div style="font-size:14px; font-weight:700; margin-bottom:14px;">Taxa de ganho</div>
+                <div style="display:flex; align-items:center; gap:20px;">
+                  <svg width="118" height="118" viewBox="0 0 42 42" style="flex:0 0 118px;">
+                    <circle cx="21" cy="21" r="15.9" fill="none" stroke="#EDE7DE" stroke-width="4.2"></circle>
+                    <circle cx="21" cy="21" r="15.9" fill="none" stroke="#3E8E5A" stroke-width="4.2" stroke-linecap="round" stroke-dasharray="{{ winDash }}" transform="rotate(-90 21 21)"></circle>
+                    <text x="21" y="20" text-anchor="middle" font-family="Space Grotesk" font-size="9" font-weight="600" fill="#23201D">{{ winRate }}</text>
+                    <text x="21" y="26.5" text-anchor="middle" font-family="Manrope" font-size="3.4" fill="#8C857B">ganho</text>
+                  </svg>
+                  <div style="flex:1; display:flex; flex-direction:column; gap:11px;">
+                    <div><div style="font-family:'Space Grotesk'; font-size:19px; font-weight:600;">{{ avgMargin }}</div><div style="font-size:11.5px; color:#8C857B;">margem média realizada</div></div>
+                    <div><div style="font-family:'Space Grotesk'; font-size:19px; font-weight:600; color:#C4432B;">{{ discountAvg }}</div><div style="font-size:11.5px; color:#8C857B;">desconto médio concedido</div></div>
+                  </div>
+                </div>
+                <div style="margin-top:auto; padding-top:16px; display:flex; gap:10px;">
+                  <div style="flex:1; background:#FBEEE8; border:1px solid #F4D8C8; border-radius:10px; padding:11px 12px;"><div style="font-family:'Space Grotesk'; font-size:17px; font-weight:600; color:#B84812;">{{ belowFloor }}</div><div style="font-size:11px; color:#9E6A4A; font-weight:600;">abaixo do piso</div></div>
+                  <div style="flex:1; background:#EEF1F3; border:1px solid #DBE1E6; border-radius:10px; padding:11px 12px;"><div style="font-family:'Space Grotesk'; font-size:17px; font-weight:600; color:#4E6072;">{{ lostDiscount }}</div><div style="font-size:11px; color:#6B7885; font-weight:600;">perdido em desconto</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:#FBFAF7; border:1px solid #E7E3DC; border-radius:14px; overflow:hidden;">
+              <div style="padding:16px 22px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #EDE7DE;">
+                <div style="font-size:14px; font-weight:700;">Precificações recentes</div>
+                <button data-key="history" onClick="{{ go }}" style="background:none; border:none; color:#DA5B18; font-weight:700; font-size:12.5px; cursor:pointer;">Ver todas →</button>
+              </div>
+              <div style="display:grid; grid-template-columns:2.4fr 1.4fr 1fr 1fr 1fr 0.9fr; padding:11px 22px; font-size:11px; font-weight:700; color:#9A938A; text-transform:uppercase; letter-spacing:0.05em; background:#F6F3EE;">
+                <span>Precificação</span><span>Solução</span><span>Recomendado</span><span>Proposto</span><span>Margem</span><span>Status</span>
+              </div>
+              <sc-for list="{{ recentRows }}" as="r" hint-placeholder-count="5">
+                <div onClick="{{ openSession }}" data-id="{{ r.id }}" style="display:grid; grid-template-columns:2.4fr 1.4fr 1fr 1fr 1fr 0.9fr; padding:14px 22px; font-size:13px; border-top:1px solid #EFEBE4; cursor:pointer; align-items:center;" style-hover="background:#F6F3EE;">
+                  <div><div style="font-weight:700; color:#23201D;">{{ r.title }}</div><div style="font-size:11.5px; color:#8C857B;">{{ r.client }}</div></div>
+                  <span style="color:#4A453E;">{{ r.solution }}</span>
+                  <span style="font-family:'Space Grotesk'; color:#4A453E;">{{ r.recommended }}</span>
+                  <span style="font-family:'Space Grotesk'; font-weight:600;">{{ r.proposed }}</span>
+                  <span style="font-family:'Space Grotesk'; font-weight:600; color:{{ r.marginColor }};">{{ r.margin }}</span>
+                  <span><span style="font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; background:{{ r.statusBg }}; color:{{ r.statusColor }};">{{ r.statusLabel }}</span></span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ============ WIZARD ============ -->
+        <sc-if value="{{ isWizard }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:1180px; padding:22px 30px 60px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+              <div style="display:flex; gap:6px; background:#EDE7DE; padding:4px; border-radius:10px;">
+                <button data-path="mode" data-val="rapido" onClick="{{ onPick }}" style="{{ modeRapidoStyle }}">⚡ Modo rápido</button>
+                <button data-path="mode" data-val="avancado" onClick="{{ onPick }}" style="{{ modeAvancadoStyle }}">⚙ Modo avançado</button>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:#8C857B;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3E8E5A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+                Salvo automaticamente
+              </div>
+            </div>
+
+            <div style="display:flex; gap:6px; margin-bottom:26px;">
+              <sc-for list="{{ steps }}" as="s" hint-placeholder-count="6">
+                <div onClick="{{ gotoStep }}" data-step="{{ s.n }}" style="flex:1; cursor:pointer;">
+                  <div style="height:5px; border-radius:3px; background:{{ s.barColor }}; margin-bottom:8px;"></div>
+                  <div style="display:flex; align-items:center; gap:7px;">
+                    <span style="width:20px; height:20px; border-radius:50%; background:{{ s.dotBg }}; color:{{ s.dotColor }}; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex:0 0 20px;">{{ s.mark }}</span>
+                    <span style="font-size:11.5px; font-weight:600; color:{{ s.txtColor }};">{{ s.label }}</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="background:#FBFAF7; border:1px solid #E7E3DC; border-radius:16px; padding:30px 34px; min-height:420px;">
+              <div key="{{ stepKey }}" style="animation:vmfade 0.25s ease;">{{ stepContent }}</div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; margin-top:20px;">
+              <div style="display:flex; gap:10px;">
+                <button onClick="{{ back }}" style="{{ backStyle }}">← Voltar</button>
+                <button onClick="{{ deleteDraft }}" style="background:#FBFAF7; border:1px solid #ECD1CB; color:#C4432B; padding:12px 18px; border-radius:10px; font-weight:600; font-size:13.5px; cursor:pointer;">Excluir</button>
+              </div>
+              <span style="align-self:center; font-size:13px; font-weight:700; color:#C4432B;">{{ stepWarn }}</span>
+              <div style="display:flex; gap:10px;">
+                <button onClick="{{ saveNow }}" style="background:#FBFAF7; border:1px solid #E7E3DC; color:#4A453E; padding:12px 20px; border-radius:10px; font-weight:700; font-size:13.5px; cursor:pointer;">Salvar agora</button>
+                <button onClick="{{ next }}" style="display:flex; align-items:center; gap:8px; background:#DA5B18; color:#fff; border:none; padding:12px 24px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer;">{{ nextLabel }}</button>
+              </div>
+            </div>
+            <sc-if value="{{ isEditing }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:12px; padding:11px 15px; background:#EEF1F3; border-radius:10px; font-size:12.5px; color:#4E6072;">✎ Editando precificação existente — clique em qualquer etapa acima para ir direto ao que quer mudar e use "Salvar agora" quando terminar.</div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- ============ RESULTADO ============ -->
+        <sc-if value="{{ isResult }}" hint-placeholder-val="{{ false }}">{{ resultContent }}</sc-if>
+
+        <!-- ============ HISTÓRICO ============ -->
+        <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:24px 30px 48px; max-width:1240px;">
+            <div style="background:#FBFAF7; border:1px solid #E7E3DC; border-radius:14px; overflow:hidden;">
+              <div style="display:grid; grid-template-columns:2.4fr 1.3fr 1.1fr 1fr 1fr 1fr 0.9fr; padding:12px 22px; font-size:11px; font-weight:700; color:#9A938A; text-transform:uppercase; letter-spacing:0.05em; background:#F6F3EE;">
+                <span>Precificação</span><span>Solução</span><span>Unidade</span><span>Recomendado</span><span>Proposto</span><span>Margem</span><span>Status</span>
+              </div>
+              <sc-for list="{{ allRows }}" as="r" hint-placeholder-count="6">
+                <div onClick="{{ openSession }}" data-id="{{ r.id }}" style="display:grid; grid-template-columns:2.4fr 1.3fr 1.1fr 1fr 1fr 1fr 0.9fr; padding:14px 22px; font-size:13px; border-top:1px solid #EFEBE4; cursor:pointer; align-items:center;" style-hover="background:#F6F3EE;">
+                  <div><div style="font-weight:700;">{{ r.title }}</div><div style="font-size:11.5px; color:#8C857B;">{{ r.client }}</div></div>
+                  <span style="color:#4A453E;">{{ r.solution }}</span>
+                  <span style="color:#8C857B;">{{ r.unit }}</span>
+                  <span style="font-family:'Space Grotesk'; color:#4A453E;">{{ r.recommended }}</span>
+                  <span style="font-family:'Space Grotesk'; font-weight:600;">{{ r.proposed }}</span>
+                  <span style="font-family:'Space Grotesk'; font-weight:600; color:{{ r.marginColor }};">{{ r.margin }}</span>
+                  <span><span style="font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; background:{{ r.statusBg }}; color:{{ r.statusColor }};">{{ r.statusLabel }}</span></span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ============ SOLUÇÕES ============ -->
+        <sc-if value="{{ isSolutions }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:24px 30px 48px; max-width:1240px;">
+            <div style="background:#EEF1F3; border-radius:11px; padding:13px 17px; margin-bottom:16px; font-size:12.5px; color:#4E6072; line-height:1.6;">Estes templates são o modelo de precificação da VendaMais: o CEO e os sócios das unidades definem aqui as margens preferenciais, as atividades e quais soluções ficam ativas. Tudo que for salvo passa a valer para as próximas precificações.</div>
+            {{ solutionEditor }}
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px;">
+              <sc-for list="{{ solutionCards }}" as="s" hint-placeholder-count="12">
+                <div style="background:#FBFAF7; border:1px solid #E7E3DC; border-radius:14px; padding:18px 19px;">
+                  <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:13px;">
+                    <div style="width:40px; height:40px; border-radius:11px; background:#FBEEE8; display:flex; align-items:center; justify-content:center;">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DA5B18" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ s.icon }}"></path></svg>
+                    </div>
+                    <span style="font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:20px; background:{{ s.activeBg }}; color:{{ s.activeColor }};">{{ s.activeLabel }}</span>
+                  </div>
+                  <div style="font-size:14.5px; font-weight:700; margin-bottom:4px;">{{ s.name }}</div>
+                  <div style="font-size:12px; color:#8C857B; line-height:1.5; margin-bottom:13px; min-height:36px;">{{ s.description }}</div>
+                  <div style="display:flex; gap:14px; padding-top:12px; border-top:1px solid #EDE7DE; align-items:flex-end;">
+                    <div><div style="font-size:10.5px; color:#9A938A; font-weight:600;">Piso</div><div style="font-family:'Space Grotesk'; font-size:15px; font-weight:600; color:#C4432B;">{{ s.floorPct }}</div></div>
+                    <div><div style="font-size:10.5px; color:#9A938A; font-weight:600;">Margem-alvo</div><div style="font-family:'Space Grotesk'; font-size:15px; font-weight:600; color:#3E8E5A;">{{ s.target }}</div></div>
+                    <div><div style="font-size:10.5px; color:#9A938A; font-weight:600;">Atividades</div><div style="font-family:'Space Grotesk'; font-size:15px; font-weight:600;">{{ s.activityCount }}</div></div>
+                    <button data-sid="{{ s.id }}" onClick="{{ editSolution }}" style="margin-left:auto; background:#FBFAF7; border:1px solid #E7E3DC; color:#B84812; padding:7px 13px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">Editar</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ============ METODOLOGIA ============ -->
+        <sc-if value="{{ isMethods }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:24px 30px 48px; max-width:1240px;">
+            <div style="background:#FBFAF7; border:1px solid #E7E3DC; border-radius:14px; padding:20px 22px; margin-bottom:16px; display:flex; gap:16px; align-items:flex-start;">
+              <div style="width:40px; height:40px; border-radius:11px; background:#FDF3EC; display:flex; align-items:center; justify-content:center; flex:0 0 40px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DA5B18" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20 M4 19.5A2.5 2.5 0 006.5 22H20V2H6.5A2.5 2.5 0 004 4.5z"></path></svg>
+              </div>
+              <div>
+                <div style="font-size:15px; font-weight:800; margin-bottom:5px;">Como o sistema chega ao preço</div>
+                <p style="font-size:13px; color:#6B655E; line-height:1.65; max-width:760px;">Nenhum método isolado controla a decisão. O motor combina técnicas reconhecidas de pricing em quatro âncoras — custo, histórico, mercado e valor — pondera cada uma pelo grau de confiança dos dados e aplica um ajuste estratégico limitado. O piso absoluto nunca é violado sem alerta e aprovação.</p>
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:14px;">
+              <sc-for list="{{ methodCards }}" as="mth" hint-placeholder-count="6">
+                <div style="background:#FBFAF7; border:1px solid #E7E3DC; border-radius:14px; padding:19px 21px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span style="font-family:'Space Grotesk'; font-size:12px; font-weight:700; color:#DA5B18;">{{ mth.num }}</span>
+                    <span style="font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:20px; background:#EEF1F3; color:#4E6072;">{{ mth.tag }}</span>
+                  </div>
+                  <div style="font-size:14.5px; font-weight:800; margin-bottom:6px;">{{ mth.name }}</div>
+                  <p style="font-size:12.5px; color:#6B655E; line-height:1.6; margin-bottom:12px;">{{ mth.desc }}</p>
+                  <div style="background:#F1EEE8; border-radius:9px; padding:10px 12px; font-family:'Space Grotesk'; font-size:12px; line-height:1.55; color:#4A453E; margin-bottom:10px;">{{ mth.formula }}</div>
+                  <div style="font-size:11.5px; color:#9A938A;"><span style="font-weight:700; color:#8C857B;">Onde aparece: </span>{{ mth.where }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ============ PARÂMETROS ============ -->
+        <sc-if value="{{ isParams }}" hint-placeholder-val="{{ false }}">{{ paramsContent }}</sc-if>
+
+        <!-- ============ CONFIGURAÇÕES ============ -->
+        <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">{{ settingsContent }}</sc-if>
+
+        <!-- ============ RELATÓRIO ============ -->
+        <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">{{ reportContent }}</sc-if>
+
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:&quot;100%&quot;}}">
+const money = (v) => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
+const moneyK = (v) => (Math.round((v||0)/1000)).toLocaleString('pt-BR');
+const pct = (v, d=1) => ((v||0)*100).toFixed(d).replace('.', ',') + '%';
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+
+const ROLE_NAMES = { admin:'Administrador Revenue', financeiro:'Financeiro', diretor:'Diretor de unidade', comercial:'Comercial', executivo:'Visualizador executivo' };
+const ICONS = {
+  dash:'M3 3v18h18 M7 14l3-4 3 3 4-6', new:'M12 5v14M5 12h14', hist:'M3 3h18v4H3z M5 7v14h14V7 M9 12h6 M9 16h4',
+  sol:'M12 2l9 5-9 5-9-5 9-5z M3 12l9 5 9-5 M3 17l9 5 9-5', param:'M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6',
+  method:'M4 19.5A2.5 2.5 0 016.5 17H20 M4 19.5A2.5 2.5 0 006.5 22H20V2H6.5A2.5 2.5 0 004 4.5z',
+  gear:'M12 15a3 3 0 100-6 3 3 0 000 6z M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h.01a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h.01a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.01a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z',
+};
+const SOL_ICONS = {
+  diag:'M22 12h-4l-3 9L9 3l-3 9H2', cons:'M20 7H4a2 2 0 00-2 2v9a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16',
+  trein:'M4 19.5A2.5 2.5 0 016.5 17H20 M4 19.5A2.5 2.5 0 006.5 22H20V2H6.5A2.5 2.5 0 004 4.5z', games:'M12 15a7 7 0 100-14 7 7 0 000 14z M8.2 13.9L7 23l5-3 5 3-1.2-9.1',
+  ment:'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M9 11a4 4 0 100-8 4 4 0 000 8 M23 21v-2a4 4 0 00-3-3.9 M16 3.1a4 4 0 010 7.8', bpo:'M3 18v-6a9 9 0 0118 0v6 M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3z M3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z',
+  hunt:'M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2 M8.5 11a4 4 0 100-8 4 4 0 000 8 M17 11l2 2 4-4', pal:'M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z M19 10v2a7 7 0 01-14 0v-2 M12 19v4 M8 23h8',
+  ia:'M9 2v3 M15 2v3 M9 19v3 M15 19v3 M2 9h3 M2 15h3 M19 9h3 M19 15h3 M5 5h14v14H5z M9 9h6v6H9z', cont:'M7 4v16l13-8z',
+  comb:'M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5', pers:'M4 21v-7 M4 10V3 M12 21v-9 M12 8V3 M20 21v-5 M20 12V3 M1 14h6 M9 8h6 M17 16h6',
+};
+
+const SOLUTIONS = [
+  { id:'diag', name:'Diagnóstico Comercial', category:'Diagnóstico', icon:SOL_ICONS.diag, description:'Análise executiva profunda de processos, funil, carteira e gestão comercial.', mMin:0.18, mTarget:0.34, mPremium:0.50, activities:['Qualificação e escopo','Preparação','Kickoff','Organização de dados','Entrevistas','Pesquisa','Visitas de campo','Análise de dados','Análise de processos','Construção de hipóteses','Elaboração do relatório','Revisão técnica','Devolutiva executiva','Plano de ação','Gestão do projeto','Deslocamentos'] },
+  { id:'cons', name:'Consultoria Comercial', category:'Consultoria', icon:SOL_ICONS.cons, description:'Programa de transformação comercial com implantação, ferramentas e governança.', mMin:0.16, mTarget:0.30, mPremium:0.44, activities:['Onboarding','Planejamento','Reuniões executivas','Reuniões com gestores','Visitas de campo','Análises','Desenho de processos','Construção de ferramentas','Implantação','Capacitação','Acompanhamento','Comitês','Relatórios','Suporte','Gestão','Coordenação metodológica'] },
+  { id:'trein', name:'Treinamentos', category:'Treinamento', icon:SOL_ICONS.trein, description:'Capacitação presencial, online, híbrida ou customizada com trilha instrucional.', mMin:0.20, mTarget:0.38, mPremium:0.55, activities:['Briefing','Diagnóstico de aprendizagem','Arquitetura instrucional','Customização','Produção de conteúdo','Preparação do facilitador','Alinhamento','Coordenação de turma','Facilitação','Materiais','Avaliação','Relatório','Sustentação','Gestão','Deslocamentos'] },
+  { id:'games', name:'Games Comerciais', category:'Games', icon:SOL_ICONS.games, description:'Vendópolis, Negocialipse e Acelerador — experiências imersivas de vendas.', mMin:0.22, mTarget:0.40, mPremium:0.58, activities:['Briefing','Configuração','Customização','Preparação de facilitadores','Materiais e kits','Logística','Aplicação','Debriefing','Relatório','Gestão','Deslocamentos'] },
+  { id:'ment', name:'Mentorias', category:'Mentoria', icon:SOL_ICONS.ment, description:'Acompanhamento individual ou em grupo com sênior reconhecido.', mMin:0.20, mTarget:0.40, mPremium:0.58, activities:['Diagnóstico inicial','Preparação','Sessões','Análise entre sessões','Materiais','Suporte','Registro de evolução','Relatório final','Gestão'] },
+  { id:'bpo', name:'BPO / Inside Sales', category:'BPO', icon:SOL_ICONS.bpo, description:'Operação comercial terceirizada com equipe, tecnologia e gestão de resultado.', mMin:0.14, mTarget:0.26, mPremium:0.38, activities:['Diagnóstico da operação','Setup','Recrutamento','Treinamento inicial','Ramp-up','Operação recorrente','Gestão','Tecnologia','Listas e dados','Qualidade','Relatórios','Governança','Reposição','Melhoria contínua'] },
+  { id:'hunt', name:'Hunting de Líderes', category:'Hunting', icon:SOL_ICONS.hunt, description:'Recrutamento especializado de líderes e profissionais comerciais.', mMin:0.25, mTarget:0.45, mPremium:0.62, activities:['Definição do perfil','Estratégia de busca','Mapeamento','Abordagem','Triagem','Entrevistas','Avaliações','Shortlist','Referências','Apoio à decisão','Garantia','Gestão'] },
+  { id:'pal', name:'Palestras', category:'Palestra', icon:SOL_ICONS.pal, description:'Apresentações executivas customizadas com palestrante reconhecido.', mMin:0.30, mTarget:0.50, mPremium:0.68, activities:['Briefing','Pesquisa','Customização','Preparação','Ensaio','Apresentação','Interação','Coordenação','Deslocamentos'] },
+  { id:'ia', name:'Sales Train & IA', category:'Tecnologia', icon:SOL_ICONS.ia, description:'Roleplay com IA, cenários e analytics de treinamento comercial.', mMin:0.24, mTarget:0.44, mPremium:0.60, activities:['Setup','Integração','Criação de cenários','Configuração de critérios','Licenças','Testes','Treinamento de usuários','Monitoramento','Analytics','Coaching','Suporte','Gestão'] },
+  { id:'cont', name:'Conteúdo & Licenciamento', category:'Conteúdo', icon:SOL_ICONS.cont, description:'Conteúdo gravado, acessos online, licenciamento e formação contínua.', mMin:0.28, mTarget:0.48, mPremium:0.64, activities:['Roteiro','Produção','Gravação','Edição','Plataforma','Licenciamento','Suporte','Atualização','Amortização'] },
+  { id:'comb', name:'Programas Integrados', category:'Combinado', icon:SOL_ICONS.comb, description:'Diagnóstico + consultoria + treinamento em um programa combinado.', mMin:0.18, mTarget:0.32, mPremium:0.46, activities:['Arquitetura do programa','Diagnóstico','Consultoria','Treinamento','Integração','Gestão','Governança','Medição'] },
+  { id:'pers', name:'Solução Personalizada', category:'Personalizada', icon:SOL_ICONS.pers, description:'Escopo sob medida para necessidades específicas do cliente.', mMin:0.18, mTarget:0.34, mPremium:0.50, activities:['Descoberta','Desenho da solução','Execução','Gestão','Medição'] },
+];
+let SOL_OVERRIDES = {};
+const solById = (id) => { const b = SOLUTIONS.find(s => s.id === id) || SOLUTIONS[0]; const o = SOL_OVERRIDES[b.id]; return o ? { ...b, ...o } : b; };
+
+const ACTIVITY_LABELS = { prep:'Preparação', custom:'Customização', internal:'Reuniões internas', client:'Reuniões com cliente', analysis:'Análise', production:'Produção', delivery:'Entrega/Facilitação', travel:'Deslocamento', mgmt:'Gestão', review:'Revisão', support:'Suporte', post:'Pós-entrega', rework:'Retrabalho' };
+const ACTIVITY_KEYS = Object.keys(ACTIVITY_LABELS);
+const BASE_HOURS = { prep:8, custom:6, internal:4, client:6, analysis:10, production:8, delivery:16, travel:4, mgmt:5, review:3, support:2, post:2, rework:2 };
+
+const STATUS = {
+  rascunho:{ label:'Rascunho', bg:'#EDE7DE', color:'#7A736A' }, revisao:{ label:'Em revisão', bg:'#EEF1F3', color:'#4E6072' },
+  proposta:{ label:'Em proposta', bg:'#FBEEE8', color:'#B84812' },
+  ganho:{ label:'Ganho', bg:'#E7F0EA', color:'#2F7A4B' }, perdido:{ label:'Perdido', bg:'#F7E4E0', color:'#C4432B' },
+};
+
+const METHODS = [
+  { name:'Value Stick — Harvard Business School', tag:'Estrutura central', desc:'Organiza toda a decisão entre quatro pontos: a disposição máxima do cliente a pagar (WTP), o preço, o custo econômico e o limite mínimo para mobilizar a entrega (WTS). O preço justo divide o valor criado entre cliente e VendaMais.', formula:'Valor criado = WTP − WTS · Valor p/ cliente = WTP − Preço · Valor p/ VendaMais = Preço − Custo', where:'Aba "Valor e WTP" do resultado.' },
+  { name:'Cost-Plus aprimorado', tag:'Âncora de custo', desc:'Os custos definem o piso e a segurança econômica — nunca o teto. O sistema resolve a equação exata considerando que impostos, comissões e custo do prazo dependem do próprio preço.', formula:'Preço = Custo econômico ÷ (1 − Impostos − Comissões − Custo do prazo − Margem desejada)', where:'Piso absoluto, preço sustentável e faixa premium.' },
+  { name:'TDABC — Time-Driven Activity-Based Costing', tag:'Motor de custo', desc:'Cada profissional custa pelo custo mensal carregado (salário × fator de encargos + benefícios) dividido pelas horas realmente produtivas — não pelas horas contratuais. Horas invisíveis (preparação, gestão, deslocamento, retrabalho) entram no custo.', formula:'Custo-hora = Custo mensal carregado ÷ (Horas contratuais × Taxa produtiva)', where:'Etapa 3 — equipe, horas e custo por atividade.' },
+  { name:'EVC — Economic Value to Customer', tag:'Âncora de valor', desc:'Estima de forma conservadora o valor econômico criado para o cliente: receita e margem incrementais, custos e perdas evitados, risco reduzido e aceleração de resultado — sempre ajustado pela probabilidade e pela confiança da estimativa.', formula:'Benefício ajustado = Benefício nominal × Probabilidade × Fator de confiança', where:'Etapa 5 — impacto econômico em 12 meses.' },
+  { name:'Value-Based Pricing', tag:'Âncora de valor', desc:'Usa o impacto econômico demonstrável para estimar uma faixa de preço, sem abandonar o piso de custo. A VendaMais captura uma fração configurável do valor criado; o restante permanece com o cliente.', formula:'Preço por valor = Valor econômico conservador × % de captura', where:'Âncora "Valor" da triangulação.' },
+  { name:'Precificação por concorrência', tag:'Âncora de mercado', desc:'Preços concorrentes são referência, não regra. O benchmark é normalizado por escopo, senioridade, duração, marca e suporte antes de entrar na triangulação — e concorrência não reduz o preço automaticamente.', formula:'Benchmark normalizado = Preço concorrente ± diferenças de escopo e risco', where:'Aba "Mercado" e âncora de mercado.' },
+  { name:'Triangulação de quatro âncoras', tag:'Decisão final', desc:'Custo, histórico, mercado e valor recebem notas de confiança de 0 a 100. Âncoras fracas pesam menos. O resultado é uma faixa — não uma falsa precisão — e o piso nunca é violado sem alerta e aprovação.', formula:'Recomendado = máx(Piso; Média ponderada por confiança × Multiplicador estratégico)', where:'Tela de resultado — preço recomendado.' },
+  { name:'Score e ajuste estratégico', tag:'Decisão final', desc:'Porte, urgência, escassez, marca, diferenciação e outros fatores geram um score de 0 a 100, convertido em um multiplicador limitado — evitando somas descontroladas de percentuais. Diferenciação sem evidência vale menos.', formula:'Multiplicador = limitar(1 + (Score − 50) × 0,01; entre 0,80 e 1,50)', where:'Etapa 5 — sliders e Prêmio de Diferenciação.' },
+  { name:'Price Waterfall', tag:'Transparência', desc:'Mostra como o preço bruto se transforma em margem real depois de impostos, comissões, custo financeiro do prazo e custo econômico. Evita confundir preço alto com margem alta.', formula:'Bruto − Impostos − Comissões − Custo do prazo − Custo econômico = Margem', where:'Aba "Composição" e relatório interno.' },
+  { name:'Valor presente e custo do prazo', tag:'Correção financeira', desc:'Recebimentos futuros valem menos que dinheiro à vista. Cada parcela é descontada por uma taxa diária derivada da taxa anual configurada (CDI, Selic ou custo de capital interno).', formula:'Taxa diária = (1 + Taxa anual)^(1/365) − 1 · VP = Parcela ÷ (1 + taxa diária)^dias', where:'Etapa 4 e aba "Pagamento e VP".' },
+  { name:'Ajuste por risco e contingência', tag:'Proteção', desc:'Escopo indefinido, prazo agressivo, muitos stakeholders ou retrabalho provável geram uma reserva de contingência visível e explicada — nunca escondida no preço.', formula:'Contingência = % de risco × custos diretos do projeto', where:'Etapa 4 e cenário conservador.' },
+  { name:'Good-Better-Best', tag:'Arquitetura comercial', desc:'Quando faz sentido, o sistema gera três alternativas de investimento: Essencial (núcleo do problema), Recomendada (melhor equilíbrio) e Transformacional (velocidade, senioridade e sustentação).', formula:'Essencial ≈ 72% do recomendado · Recomendada = preço recomendado · Transformacional = faixa premium', where:'Documento comercial.' },
+  { name:'Margem de contribuição', tag:'Disciplina financeira', desc:'Mede o que efetivamente sobra após todas as deduções e custos variáveis atribuíveis. É a métrica que dispara alertas de desconto destrutivo e aprovações abaixo do piso.', formula:'Margem = (Receita líquida − Custo econômico) ÷ Preço', where:'Indicadores, calculadora de flexibilidade e gatilhos de aprovação.' },
+];
+
+const DEFAULT_CONFIG = { supabaseUrl:'', supabaseKey:'', openaiKey:'', adminPass:'admin' };
+const loadConfig = () => { try { return { ...DEFAULT_CONFIG, ...(JSON.parse(localStorage.getItem('vmpi_config')||'{}')) }; } catch(e){ return { ...DEFAULT_CONFIG }; } };
+
+const DEFAULT_PARAMS = {
+  selic:13.25, cdi:13.15, ipca:4.5, capital:12,
+  taxRate:20, cltFactor:1.8, productiveRate:65, overheadPct:12, contingencyPct:8,
+  commDefault:5, discountLimit:8,
+};
+
+class Component extends DCLogic {
+  state = {
+    view: 'dashboard', role: 'diretor', sessions: [], draft: null, resultTab: 'resumo',
+    activeSessionId: null, flexPrice: null, salariesUnlocked: false, reportView: 'interno', paramTab: 'indices',
+    params: { ...DEFAULT_PARAMS }, config: loadConfig(), sbStatus: null, aiBusy: false,
+  };
+
+  componentDidMount() {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem('vmpi_state_v2') || 'null'); } catch(e){}
+    if (saved && saved.solOverrides) SOL_OVERRIDES = saved.solOverrides;
+    if (saved && saved.params) this.setState({ params: { ...DEFAULT_PARAMS, ...saved.params } });
+    if (saved && saved.sessions) {
+      const migrated = saved.sessions.filter(s => !s.demo).map(s => s.status==='aprovado' ? {...s, status:'ganho'} : s);
+      this.setState({ sessions: migrated, role: saved.role || 'diretor' }, this.persist);
+    }
+    this.sbLoad().then(data => {
+      if (data) {
+        if (data.solOverrides) SOL_OVERRIDES = data.solOverrides;
+        this.setState({ sessions: data.sessions||[], params: { ...DEFAULT_PARAMS, ...(data.params||{}) }, sbStatus:'ok' });
+      }
+    }).catch(()=>{});
+  }
+
+  // ---------- SUPABASE SYNC ----------
+  sbConfigured() { const c = this.state.config; return !!(c.supabaseUrl && c.supabaseKey); }
+  sbHeaders() { const c = this.state.config; return { apikey:c.supabaseKey, Authorization:'Bearer '+c.supabaseKey, 'Content-Type':'application/json' }; }
+  sbBase() { return this.state.config.supabaseUrl.replace(/\/+$/,''); }
+  async sbLoad() {
+    if (!this.sbConfigured()) return null;
+    const r = await fetch(this.sbBase()+'/rest/v1/vm_state?id=eq.default&select=data', { headers:this.sbHeaders() });
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    const rows = await r.json();
+    return rows[0]?.data || null;
+  }
+  sbSaveSoon = () => { if (!this.sbConfigured()) return; clearTimeout(this._sbT); this._sbT = setTimeout(()=>this.sbSave(), 1200); };
+  async sbSave() {
+    if (!this.sbConfigured()) return;
+    const payload = { id:'default', data:{ sessions:this.state.sessions, solOverrides:SOL_OVERRIDES, params:this.state.params }, updated_at:new Date().toISOString() };
+    try {
+      const r = await fetch(this.sbBase()+'/rest/v1/vm_state', { method:'POST', headers:{ ...this.sbHeaders(), Prefer:'resolution=merge-duplicates' }, body:JSON.stringify(payload) });
+      this.setState({ sbStatus: r.ok ? 'ok' : 'erro HTTP '+r.status });
+    } catch(e) { this.setState({ sbStatus:'offline' }); }
+  }
+  testConnection = async () => {
+    this.setState({ sbStatus:'testando…' });
+    try { await this.sbLoad(); this.setState({ sbStatus:'ok' }); await this.sbSave(); }
+    catch(e) { this.setState({ sbStatus:'falhou: '+e.message }); }
+  };
+  configInput = (e) => {
+    const k = e.target.dataset.k, v = e.target.value;
+    this.setState(prev => { const config = { ...prev.config, [k]:v }; try { localStorage.setItem('vmpi_config', JSON.stringify(config)); } catch(err){} return { config }; });
+  };
+
+  persist = () => {
+    try { localStorage.setItem('vmpi_state_v2', JSON.stringify({ sessions: this.state.sessions, role: this.state.role, solOverrides: SOL_OVERRIDES, params: this.state.params })); } catch(e){}
+    this.sbSaveSoon();
+  };
+
+  // ---------- FINANCIAL ENGINE ----------
+  memberHourly(m) {
+    const cf = m.loadedFactor || 1.8, pr = m.productiveRate || 0.65, ch = m.contractHours || 176;
+    const ph = Math.max(ch * pr, 1);
+    if (m.contractType === 'pj_hora') return m.hourlyRate || 0;
+    if (m.contractType === 'pj_diaria') return (m.hourlyRate || 0) / 8;
+    if (m.contractType === 'clt') return ((m.comp || 0) * cf + (m.benefits || 0)) / ph;
+    return (m.comp || 0) / ph; // pj_mensal, socio, parceiro
+  }
+  memberHours(m) { return ACTIVITY_KEYS.reduce((s,k) => s + (Number(m.hours?.[k]) || 0), 0); }
+  durationMonths(d) {
+    const n = Number(d.scope?.duration)||0, u = d.scope?.durationUnit||'meses';
+    return u==='meses' ? n : u==='semanas' ? n/4.345 : n/30.44;
+  }
+  hoursMult(d) {
+    if (d.hoursMode!=='monthly' || !['cons','bpo','trein'].includes(d.solutionId)) return 1;
+    return Math.max(1, this.durationMonths(d));
+  }
+
+  compute(d) {
+    const sol = solById(d.solutionId);
+    const team = d.team || [];
+    let labor = 0, totalHours = 0;
+    const byActivity = {}; ACTIVITY_KEYS.forEach(k => byActivity[k] = 0);
+    team.forEach(m => {
+      const hc = this.memberHourly(m), h = this.memberHours(m);
+      labor += hc * h; totalHours += h;
+      ACTIVITY_KEYS.forEach(k => byActivity[k] += (Number(m.hours?.[k]) || 0));
+    });
+    const hMult = this.hoursMult(d);
+    if (hMult !== 1) { labor *= hMult; totalHours *= hMult; ACTIVITY_KEYS.forEach(k => byActivity[k] *= hMult); }
+    const c = d.costs || {};
+    const suppliers = Number(c.suppliers)||0, tech = Number(c.tech)||0, materials = Number(c.materials)||0, oppCost = Number(c.oppCost)||0;
+    const overhead = labor * ((Number(c.overheadPct)||0)/100);
+    const directBase = labor + suppliers + tech + materials + overhead;
+    const contingency = directBase * ((Number(c.contingencyPct)||0)/100);
+    const economicCost = directBase + contingency + oppCost;
+
+    // present value fraction
+    const annual = (Number(d.payment?.annualRate)||0)/100;
+    const daily = Math.pow(1+annual, 1/365) - 1;
+    const inst = (d.payment?.installments || []);
+    let pvFrac = 0, sumPct = 0;
+    inst.forEach(p => { const pf = (Number(p.pct)||0)/100; sumPct += Number(p.pct)||0; pvFrac += pf / Math.pow(1+daily, Number(p.days)||0); });
+    if (!inst.length) pvFrac = 1;
+    const financialFrac = 1 - pvFrac;
+
+    const taxRate = (Number(d.taxRate)!=null ? Number(d.taxRate) : 20)/100;
+    let commEff = 0;
+    (d.commissions||[]).forEach(cm => {
+      const r = (Number(cm.rate)||0)/100;
+      if (cm.base === 'net') commEff += r * (1 - taxRate);
+      else if (cm.base === 'received') commEff += r * pvFrac;
+      else commEff += r; // gross
+    });
+
+    const deductFrac = taxRate + commEff + financialFrac;
+    const priceFor = (margin) => {
+      const denom = pvFrac - taxRate - commEff - margin; // == 1 - deductFrac - margin
+      if (denom <= 0.001) return economicCost * 20;
+      return economicCost / denom;
+    };
+    const floor = priceFor(sol.mMin);
+    const sustainable = priceFor(sol.mTarget);
+    const premium = priceFor(sol.mPremium);
+
+    // value
+    const v = d.value || {};
+    const impact = Number(v.impact12m)||0;
+    const conf = (Number(v.confidence)!=null ? Number(v.confidence) : 50)/100;
+    const capture = (Number(v.capturePct)!=null ? Number(v.capturePct) : 15)/100;
+    const economicValue = impact * conf;
+    const valuePrice = economicValue * capture;
+
+    // strategic score
+    const sc = d.strategic?.scores || {};
+    const scVals = Object.values(sc);
+    const scoreBase = scVals.length ? scVals.reduce((a,b)=>a+(Number(b)||0),0)/scVals.length : 50;
+    const diffCount = ['methodology','rareExpert','cases','valuesBrand'].filter(k => d.differentiation?.[k] === true).length;
+    const hasEvidence = !!((d.differentiation?.evidence)||'').trim();
+    const score = clamp(scoreBase + diffCount*(hasEvidence ? 2.5 : 1), 0, 100);
+    const strategicMult = clamp(1 + (score-50)*0.01, 0.80, 1.50);
+
+    // market
+    const comps = (d.market?.competitors||[]).map(x=>Number(x.price)||0).filter(x=>x>0);
+    const marketMed = comps.length ? comps.sort((a,b)=>a-b)[Math.floor(comps.length/2)] : 0;
+
+    // history anchor: median of WON deals for the same solution
+    const won = (this.state.sessions||[]).filter(s => s.solutionId===d.solutionId && s.status==='ganho' && s.id!==d._sid);
+    const wonPrices = won.map(s => s.proposed||s.recommended).filter(x=>x>0).sort((a,b)=>a-b);
+    const historyPrice = wonPrices.length ? wonPrices[Math.floor(wonPrices.length/2)] : 0;
+    // anchors
+    const anchors = [
+      { name:'Custo', price: sustainable, conf: 90 },
+      { name:'Histórico', price: historyPrice, conf: historyPrice ? Math.min(70, 40+won.length*10) : 0 },
+      { name:'Mercado', price: marketMed, conf: marketMed?45:0 },
+      { name:'Valor', price: valuePrice, conf: valuePrice? Math.round(30+conf*55):0 },
+    ];
+    const elig = anchors.filter(a => a.price>0 && a.conf>0);
+    const wsum = elig.reduce((s,a)=>s+a.conf,0) || 1;
+    const base = elig.reduce((s,a)=>s+a.price*a.conf,0) / wsum;
+    const recommended = Math.max(floor, base * strategicMult);
+    const premiumTop = Math.max(premium, recommended*1.18);
+    const confidence = Math.round(elig.reduce((s,a)=>s+a.conf,0)/(elig.length||1) * 0.75 + this.completeness(d)*25);
+
+    const proposed = Number(d.proposedPrice)||recommended;
+    const marginAt = (price) => price>0 ? (price*pvFrac - price*taxRate - price*commEff - economicCost)/price : 0;
+    const netAt = (price) => price*pvFrac - price*taxRate - price*commEff;
+
+    return {
+      sol, labor, totalHours, byActivity, suppliers, tech, materials, overhead, contingency, oppCost, economicCost,
+      taxRate, commEff, pvFrac, financialFrac, floor, sustainable, premium, premiumTop, recommended, proposed,
+      economicValue, valuePrice, score, strategicMult, marketMed, anchors, elig, confidence, diffCount, hasEvidence,
+      marginAt, netAt, marginRec: marginAt(recommended), marginProp: marginAt(proposed),
+      netRec: netAt(recommended), pvRec: recommended*pvFrac, financialCost: recommended*financialFrac,
+      wtp: impact, valueCaptured: valuePrice, valueToClient: Math.max(0, economicValue - recommended),
+    };
+  }
+  completeness(d) {
+    let n=0, t=6;
+    if (d.solutionId) n++; if ((d.team||[]).length && this.memberHours(d.team[0])>0) n++;
+    if ((d.value?.impact12m)) n++; if ((d.market?.competitors||[]).length) n++;
+    if ((d.payment?.installments||[]).length) n++; if (d.strategic && Object.keys(d.strategic.scores||{}).length) n++;
+    return n/t;
+  }
+
+  // ---------- STATE HELPERS ----------
+  setPath(path, value) {
+    this.setState(prev => {
+      const d = structuredClone(prev.draft || {});
+      const ks = path.split('.'); let o = d;
+      for (let i=0;i<ks.length-1;i++){ const k = ks[i]; if (o[k]==null) o[k] = /^\d+$/.test(ks[i+1])?[]:{}; o = o[k]; }
+      o[ks[ks.length-1]] = value;
+      return { draft: d };
+    });
+  }
+  onFieldInput = (e) => {
+    const p = e.target.dataset.path, t = e.target.dataset.type;
+    if (p === '__role') { this.setState({ role: e.target.value }, this.persist); return; }
+    let val = e.target.value;
+    if (t === 'num') val = e.target.value === '' ? '' : Number(e.target.value);
+    this.setPath(p, val);
+  };
+  onPick = (e) => { this.setPath(e.currentTarget.dataset.path, e.currentTarget.dataset.val); };
+
+  blankDraft() {
+    const P = this.state.params || DEFAULT_PARAMS;
+    return {
+      mode:'rapido', step:1, unit:'', solutionId:'', title:'', clientName:'', owner: ROLE_NAMES[this.state.role],
+      scope:{ duration:3, durationUnit:'meses', participants:0, groups:1, meetings:0, proCount:2, format:'presencial', customization:'media', seniority:'senior', governance:'media' },
+      team:[ this.blankMember('Consultor Sênior','clt',18000) ],
+      costs:{ suppliers:0, tech:0, materials:0, overheadPct:P.overheadPct, contingencyPct:P.contingencyPct, oppCost:0 },
+      taxRate:P.taxRate, commissions:[{ label:'Vendedor', rate:P.commDefault, base:'gross' }],
+      payment:{ installments:[{pct:100,days:30}], annualRate:P.capital, rateSource:'interno', inflationIdx:'IPCA' },
+      value:{ impact12m:0, confidence:50, capturePct:15 },
+      differentiation:{ methodology:false, rareExpert:false, cases:false, valuesBrand:false, evidence:'' },
+      market:{ competitors:[], alternative:'externo' },
+      strategic:{ scores:{ porte:50, impacto:50, urgencia:50, complexidade:50, senioridade:50, escassez:50, marca:50, diferenciacao:50, competicao:50, recorrencia:50 } },
+      proposedPrice:null, status:'rascunho',
+    };
+  }
+  blankMember(label, type, comp) {
+    const P = this.state.params || DEFAULT_PARAMS;
+    return { roleLabel:label, contractType:type, comp:comp||0, hourlyRate:0, benefits:0, loadedFactor:P.cltFactor, productiveRate:P.productiveRate/100, contractHours:176,
+      hours:{ ...BASE_HOURS } };
+  }
+
+  // ---------- NAV ----------
+  go = (e) => { const k = e.currentTarget.dataset.key; if (k==='wizard' && !this.state.draft) { this.startNew(); return; } this.setState({ view: k }); };
+  startNew = () => { this.setState({ view:'wizard', draft: this.blankDraft(), resultTab:'resumo' }); };
+  next = () => {
+    const d = this.state.draft; if (!d) return;
+    if (d.step === 1 && !d.solutionId) { this.setState({ stepWarn:'Escolha uma solução para continuar.' }); return; }
+    if (this.state.stepWarn) this.setState({ stepWarn:null });
+    if (d.step < 6) this.setPath('step', d.step+1);
+    else this.saveAndOpen();
+  };
+  back = () => { const d = this.state.draft; if (d && d.step>1) this.setPath('step', d.step-1); };
+  gotoStep = (e) => { this.setState({ stepWarn:null }); this.setPath('step', Number(e.currentTarget.dataset.step)); };
+  saveNow = () => {
+    const d = this.state.draft; if (!d) return;
+    if (!d.solutionId) { this.setState({ stepWarn:'Escolha uma solução antes de salvar.' }); return; }
+    this.setState({ stepWarn:null }); this.saveAndOpen();
+  };
+  deleteDraft = () => {
+    const d = this.state.draft; if (!d) return;
+    const sid = d._sid;
+    const label = sid ? 'Excluir esta precificação definitivamente?' : 'Descartar esta precificação em andamento?';
+    if (!confirm(label)) return;
+    this.setState(prev => ({
+      sessions: sid ? prev.sessions.filter(x=>x.id!==sid) : prev.sessions,
+      draft:null, activeSessionId: sid===prev.activeSessionId?null:prev.activeSessionId,
+      view: prev.sessions.length ? 'history' : 'dashboard',
+    }), this.persist);
+  };
+  toggleDiff = (e) => { const k = e.currentTarget.dataset.k; const cur = this.state.draft?.differentiation?.[k] === true; this.setPath('differentiation.'+k, !cur); };
+
+  saveAndOpen = () => {
+    const d = structuredClone(this.state.draft);
+    const r = this.compute(d);
+    const existing = d._sid ? this.state.sessions.find(x => x.id === d._sid) : null;
+    const id = existing ? existing.id : 'p'+Date.now();
+    d._sid = id;
+    const session = {
+      id, version: existing ? (existing.version||1)+1 : 1,
+      title: d.title || (solById(d.solutionId).name+' — '+(d.clientName||'sem cliente')), client: d.clientName||'—',
+      solution: solById(d.solutionId).name, solutionId:d.solutionId, unit:d.unit, owner:d.owner,
+      status: existing ? existing.status : (d.status||'rascunho'),
+      recommended: r.recommended, floor:r.floor, sustainable:r.sustainable, premium:r.premiumTop, proposed:r.proposed,
+      margin:r.marginRec, confidence:r.confidence, draft:d,
+      createdAt: existing ? existing.createdAt : Date.now(), updatedAt: Date.now(), demo:false,
+    };
+    this.setState(prev => ({ sessions: existing ? prev.sessions.map(x => x.id===id ? session : x) : [session, ...prev.sessions], activeSessionId:id, view:'result', resultTab:'resumo', flexPrice:r.recommended }), this.persist);
+  };
+  openSession = (e) => {
+    const id = e.currentTarget.dataset.id;
+    const s = this.state.sessions.find(x=>x.id===id); if (!s) return;
+    this.setState({ activeSessionId:id, draft:structuredClone(s.draft), view:'result', resultTab:'resumo', flexPrice:s.proposed||s.recommended, salariesUnlocked:false });
+  };
+  activeSession() { return this.state.sessions.find(x=>x.id===this.state.activeSessionId); }
+  setTab = (e) => { this.setState({ resultTab: e.currentTarget.dataset.tab }); };
+  setStatus = (e) => {
+    const v = e.target.value; const s = this.activeSession(); if (!s) return;
+    this.setState(prev => ({ sessions: prev.sessions.map(x => x.id===s.id ? {...x, status:v} : x) }), this.persist);
+  };
+  editSession = () => { const d = structuredClone(this.state.draft); d._sid = this.state.activeSessionId; d.step = 1; this.setState({ view:'wizard', draft:d }); };
+  duplicateSession = () => {
+    const s = this.activeSession(); if (!s) return;
+    const d = structuredClone(s.draft); delete d._sid; d.step = 1; d.title = (s.title||'')+' (cópia)';
+    this.setState({ view:'wizard', draft:d });
+  };
+  gotoReport = () => { this.setState({ view:'report', reportView:'interno', salariesUnlocked:false }); };
+  setFlex = (e) => { this.setState({ flexPrice: Number(e.target.value) }); };
+  setProposed = (e) => {
+    const v = e.target.value === '' ? null : Number(e.target.value);
+    const s = this.activeSession(); if (!s) return;
+    const d = structuredClone(s.draft); d.proposedPrice = v;
+    const r = this.compute(d);
+    const price = v || r.recommended;
+    const updated = { ...s, draft:d, proposed:price, margin:r.marginAt(price) };
+    this.setState(prev => ({ sessions: prev.sessions.map(x=>x.id===s.id?updated:x), draft:d, flexPrice:price }), this.persist);
+  };
+  unlockSalaries = () => {
+    const p = prompt('Senha do administrador para revelar salários e nomes:');
+    if (p === (this.state.config.adminPass || 'admin')) this.setState({ salariesUnlocked:true });
+    else if (p!=null) alert('Senha incorreta. Salários permanecem ocultos.');
+  };
+  setReportView = (e) => { this.setState({ reportView: e.currentTarget.dataset.v }); };
+
+  // solution template editing
+  editSolution = (e) => {
+    const id = e.currentTarget.dataset.sid; const s = solById(id);
+    this.setState({ editingSolId:id, solDraft:{ name:s.name, description:s.description, mMin:Math.round(s.mMin*100), mTarget:Math.round(s.mTarget*100), mPremium:Math.round(s.mPremium*100), active:s.active!==false, activitiesText:s.activities.join('\n') }, solError:null });
+    setTimeout(() => { const main = document.querySelector('main'); if (main) main.scrollTop = 0; }, 60);
+  };
+  solDraftInput = (e) => {
+    const k = e.target.dataset.k; let v = e.target.value;
+    if (e.target.dataset.type==='num') v = v===''?'':Number(v);
+    this.setState(prev => ({ solDraft:{ ...prev.solDraft, [k]:v } }));
+  };
+  toggleSolActive = () => { this.setState(prev => ({ solDraft:{ ...prev.solDraft, active:!prev.solDraft.active } })); };
+  saveSolution = () => {
+    const d = this.state.solDraft, id = this.state.editingSolId;
+    const mn=Number(d.mMin), mt=Number(d.mTarget), mp=Number(d.mPremium);
+    if (!(mn>=0 && mt>mn && mp>mt && mp<90)) { this.setState({ solError:'As margens devem crescer: mínima < alvo < premium (e premium abaixo de 90%).' }); return; }
+    SOL_OVERRIDES[id] = { name:(d.name||'').trim()||solById(id).name, description:d.description, mMin:mn/100, mTarget:mt/100, mPremium:mp/100, active:d.active, activities:(d.activitiesText||'').split('\n').map(x=>x.trim()).filter(Boolean) };
+    this.setState({ editingSolId:null, solDraft:null, solError:null }, this.persist);
+  };
+  resetSolution = () => { delete SOL_OVERRIDES[this.state.editingSolId]; this.setState({ editingSolId:null, solDraft:null, solError:null }, this.persist); };
+  cancelSolEdit = () => { this.setState({ editingSolId:null, solDraft:null, solError:null }); };
+
+  renderSolutionEditor() {
+    const st = this.state; if (!st.editingSolId || !st.solDraft) return null;
+    const R = React.createElement, self = this, d = st.solDraft;
+    const inp = (k, type, style) => R('input',{'data-k':k,'data-type':type||'text',value:d[k]??'',onChange:self.solDraftInput,style:{width:'100%',padding:'9px 11px',border:'1px solid #DDD8D0',borderRadius:'8px',fontSize:'13px',background:'#fff',fontFamily:type==='num'?'Space Grotesk':'Manrope',...(style||{})}});
+    const lbl = (t,h) => R('div',{style:{fontSize:'12px',fontWeight:700,color:'#4A453E',marginBottom:'6px'}},t, h&&R('span',{style:{fontWeight:500,color:'#9A938A'}},'  '+h));
+    return R('div',{style:{background:'#FBFAF7',border:'1.5px solid #DA5B18',borderRadius:'14px',padding:'22px 24px',marginBottom:'16px'}},
+      R('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px'}},
+        R('div',{style:{fontSize:'15px',fontWeight:800}},'Editar template — '+solById(st.editingSolId).name),
+        R('button',{onClick:self.toggleSolActive,style:{padding:'7px 14px',borderRadius:'20px',border:'none',cursor:'pointer',fontSize:'12px',fontWeight:700,background:d.active?'#E7F0EA':'#EDE7DE',color:d.active?'#2F7A4B':'#7A736A'}}, d.active?'✓ Ativa no fluxo':'Inativa — oculta do fluxo')),
+      R('div',{style:{display:'grid',gridTemplateColumns:'1.4fr 1fr 1fr 1fr',gap:'14px',marginBottom:'14px'}},
+        R('div',null, lbl('Nome da solução'), inp('name')),
+        R('div',null, lbl('Margem mínima','% — piso'), inp('mMin','num')),
+        R('div',null, lbl('Margem-alvo','% — sustentável'), inp('mTarget','num')),
+        R('div',null, lbl('Margem premium','% — teto'), inp('mPremium','num'))),
+      R('div',{style:{marginBottom:'14px'}}, lbl('Descrição'), inp('description')),
+      R('div',{style:{marginBottom:'14px',padding:'12px 14px',background:'#F6F3EE',borderRadius:'10px',fontSize:'12px',color:'#6B655E',lineHeight:1.65}},
+        R('strong',{style:{color:'#4A453E'}},'Direcionamento para as margens: '),'a mínima deve cobrir risco e custo de oportunidade (se o projeto sair por ela, não pode dar prejuízo em cenário ruim). Referências de mercado para serviços profissionais: consultoria 25–40% de alvo · treinamentos 35–50% · BPO/operações 20–30% · palestras e mentorias 45–60%. Premium só se sustenta com diferenciação comprovada (metodologia, cases, escassez). A lista de atividades é um checklist para quem estima horas — ela não entra no cálculo; o que vira custo são as horas informadas na etapa 3.'),
+      R('div',{style:{marginBottom:'14px'}}, lbl('Atividades do template','uma por linha — checklist de referência, não entra no cálculo'),
+        R('textarea',{'data-k':'activitiesText',value:d.activitiesText,onChange:self.solDraftInput,rows:8,style:{width:'100%',padding:'10px 12px',border:'1px solid #DDD8D0',borderRadius:'8px',fontSize:'12.5px',background:'#fff',fontFamily:'Manrope',lineHeight:1.6,resize:'vertical'}})),
+      st.solError && R('div',{style:{marginBottom:'12px',fontSize:'12.5px',fontWeight:700,color:'#C4432B'}}, st.solError),
+      R('div',{style:{display:'flex',gap:'10px',justifyContent:'space-between'}},
+        R('button',{onClick:self.resetSolution,style:{background:'none',border:'none',color:'#8C857B',fontSize:'12.5px',fontWeight:600,cursor:'pointer',textDecoration:'underline'}},'Restaurar padrão VendaMais'),
+        R('div',{style:{display:'flex',gap:'10px'}},
+          R('button',{onClick:self.cancelSolEdit,style:{background:'#FBFAF7',border:'1px solid #E7E3DC',padding:'10px 18px',borderRadius:'9px',fontSize:'13px',fontWeight:600,cursor:'pointer'}},'Cancelar'),
+          R('button',{onClick:self.saveSolution,style:{background:'#DA5B18',color:'#fff',border:'none',padding:'10px 20px',borderRadius:'9px',fontSize:'13px',fontWeight:700,cursor:'pointer'}},'Salvar template'))),
+      R('div',{style:{marginTop:'14px',padding:'11px 13px',background:'#EEF1F3',borderRadius:'9px',fontSize:'11.5px',color:'#4E6072',lineHeight:1.6}},'As margens editadas passam a valer para novas precificações e recálculos desta solução. Precificações ganhas/perdidas mantêm o valor registrado.'));
+  }
+
+  // team ops
+  addMember = () => { const t=[...(this.state.draft.team||[]), this.blankMember('Novo profissional','pj_mensal',0)]; this.setPath('team', t); };
+  removeMember = (e) => { const t=[...this.state.draft.team]; if (t.length<=1) return; t.splice(Number(e.currentTarget.dataset.i),1); this.setPath('team', t); };
+  addCommission = () => { const c=[...(this.state.draft.commissions||[]), {label:'Nova comissão', rate:3, base:'gross'}]; this.setPath('commissions', c); };
+  removeCommission = (e) => { const c=[...this.state.draft.commissions]; c.splice(Number(e.currentTarget.dataset.i),1); this.setPath('commissions', c); };
+  removeCompetitor = (e) => { const c=[...this.state.draft.market.competitors]; c.splice(Number(e.currentTarget.dataset.i),1); this.setPath('market.competitors', c); };
+  addInstallment = () => { const p=[...(this.state.draft.payment.installments||[]), {pct:0, days:60}]; this.setPath('payment.installments', p); };
+  removeInstallment = (e) => { const p=[...this.state.draft.payment.installments]; if (p.length<=1) return; p.splice(Number(e.currentTarget.dataset.i),1); this.setPath('payment.installments', p); };
+  addCompetitor = () => { const c=[...(this.state.draft.market.competitors||[]), {name:'', price:0, scope:'comparável'}]; this.setPath('market.competitors', c); };
+  useModelEstimate = () => {
+    const d = this.state.draft;
+    const mult = { alta:1.5, media:1, baixa:0.6 }[d.scope?.customization] || 1;
+    const online = ['online','async'].includes(d.scope?.format);
+    const t = (d.team||[]).map(m => { const nm=structuredClone(m); ACTIVITY_KEYS.forEach(k=> nm.hours[k]=Math.round((BASE_HOURS[k]||0)*mult)); if (online) nm.hours.travel = 0; return nm; });
+    this.setPath('team', t);
+  };
+
+  // ---------- DEMO ----------
+  seedDemo() {
+    const mk = (over) => { const d = this.blankDraft(); return { ...structuredClone(d), ...over, scope:{...d.scope, ...(over.scope||{})}, value:{...d.value, ...(over.value||{})} }; };
+    const cases = [
+      { sid:'diag', title:'Diagnóstico Executivo — Grupo Aurora', client:'Grupo Aurora', unit:'SP — Consultoria', status:'ganho', prop:0.96, impact:1200000, cap:12, comps:[{price:88000}], teamComp:22000 },
+      { sid:'cons', title:'Consultoria 12 meses — Delta Log', client:'Delta Logística', unit:'RJ — Consultoria', status:'proposta', prop:1.0, impact:4500000, cap:8, comps:[{price:420000},{price:510000}], teamComp:24000, months:12 },
+      { sid:'trein', title:'Treinamento presencial — Nexus (2 turmas)', client:'Nexus Varejo', unit:'MG — Educação', status:'ganho', prop:0.93, impact:600000, cap:14, comps:[{price:62000}], teamComp:16000 },
+      { sid:'games', title:'Vendópolis — Convenção Prisma', client:'Prisma Seguros', unit:'SP — Educação', status:'ganho', prop:1.0, impact:300000, cap:20, comps:[], teamComp:18000 },
+      { sid:'ment', title:'Mentoria de lideranças — Orion', client:'Orion Tech', unit:'SP — Consultoria', status:'perdido', prop:0.78, impact:400000, cap:16, comps:[{price:54000}], teamComp:30000 },
+      { sid:'bpo', title:'BPO Inside Sales — Vertix', client:'Vertix SaaS', unit:'RJ — BPO', status:'revisao', prop:1.0, impact:2000000, cap:6, comps:[{price:680000}], teamComp:12000 },
+    ];
+    return cases.map((c,idx) => {
+      const d = mk({ solutionId:c.sid, title:c.title, clientName:c.client, unit:c.unit, status:c.status });
+      d.team = [ this.blankMember(c.sid==='diag'?'Consultor Sênior':'Especialista', 'clt', c.teamComp), this.blankMember('Analista','clt', 9000) ];
+      if (c.months) d.scope.duration = c.months;
+      d.value.impact12m = c.impact; d.value.capturePct = c.cap; d.value.confidence = 60;
+      d.market.competitors = (c.comps||[]).map(x=>({name:'Concorrente', price:x.price, scope:'comparável'}));
+      d.strategic.scores = { porte:70, impacto:75, urgencia:55, complexidade:60, senioridade:70, escassez:50, marca:65, diferenciacao:60, competicao:45, recorrencia:55 };
+      const r = this.compute(d);
+      d.proposedPrice = Math.round(r.recommended * c.prop);
+      return {
+        id:'demo'+idx, title:c.title, client:c.client, solution:solById(c.sid).name, solutionId:c.sid, unit:c.unit,
+        owner:'Diretor (demo)', status:c.status, recommended:r.recommended, floor:r.floor, sustainable:r.sustainable,
+        premium:r.premiumTop, proposed:d.proposedPrice, margin:r.marginAt(d.proposedPrice), confidence:r.confidence,
+        draft:d, createdAt:Date.now()-idx*86400000, demo:true,
+      };
+    });
+  }
+
+  // ---------- RENDER HELPERS ----------
+  navStyle(key) {
+    const active = this.state.view===key || (key==='hist'&&this.state.view==='history');
+    return `display:flex; align-items:center; gap:11px; width:100%; padding:10px 13px; border:none; border-radius:9px; font-size:13.5px; font-weight:${active?700:500}; cursor:pointer; background:${active?'#33302B':'transparent'}; color:${active?'#F5F2ED':'#A39C92'}; text-align:left;`;
+  }
+  stepData(d) {
+    const cur = d?.step || 1;
+    const editing = !!d?._sid;
+    const labels = ['O que','Tamanho','Equipe','Custos','Valor','Resultado'];
+    return labels.map((l,i) => {
+      const n=i+1, done=editing ? n!==cur : n<cur, active=n===cur;
+      return { n, label:l, mark: done?'✓':String(n), barColor: (done||active)?'#DA5B18':'#E7E3DC',
+        dotBg: active?'#DA5B18':done?'#F4D8C8':'#EDE7DE', dotColor: active?'#fff':done?'#B84812':'#9A938A',
+        txtColor: active?'#23201D':'#9A938A' };
+    });
+  }
+
+  el(tag, props, ...kids) { return React.createElement(tag, props, ...kids); }
+
+  renderVals() {
+    const st = this.state, d = st.draft;
+    const sessions = st.sessions;
+    const nav = [
+      { key:'dashboard', label:'Painel', icon:ICONS.dash },
+      { key:'wizard', label:'Nova precificação', icon:ICONS.new },
+      { key:'history', label:'Precificações', icon:ICONS.hist },
+      { key:'solutions', label:'Soluções e templates', icon:ICONS.sol },
+      { key:'methods', label:'Metodologia', icon:ICONS.method },
+      { key:'parameters', label:'Parâmetros financeiros', icon:ICONS.param },
+      { key:'settings', label:'Configurações', icon:ICONS.gear },
+    ];
+    const view = st.view;
+    const titles = { dashboard:['Painel executivo','Visão consolidada de Revenue e Pricing'], wizard:['Nova precificação','Complete em poucos minutos'], history:['Precificações','Histórico e comparáveis'], solutions:['Soluções e templates','Modelos de escopo, atividades e margens'], parameters:['Parâmetros financeiros','Índices, impostos, comissões e margens'], methods:['Metodologia de precificação','As técnicas que sustentam cada recomendação'], settings:['Configurações','Integrações, sincronização e segurança'], result:['Resultado da precificação','Piso, sustentável, recomendado e premium'], report:['Relatório','Documento interno e comercial'] };
+    const [vt, vs] = titles[view] || ['',''];
+
+    // dashboard data
+    const priced = sessions.filter(s=>s);
+    const totalPriced = priced.reduce((a,s)=>a+(s.proposed||s.recommended),0);
+    const wins = priced.filter(s=>s.status==='ganho'); const decided = priced.filter(s=>['ganho','perdido'].includes(s.status));
+    const winRateN = decided.length ? wins.length/decided.length : 0;
+    const avgMarginN = wins.length ? wins.reduce((a,s)=>a+s.margin,0)/wins.length : (priced.reduce((a,s)=>a+s.margin,0)/(priced.length||1));
+    const discountN = priced.filter(s=>s.recommended>0).reduce((a,s)=>a+(1-(s.proposed/s.recommended)),0)/(priced.length||1);
+    const belowFloorN = priced.filter(s=>s.proposed < s.floor).length;
+    const lostDiscN = priced.reduce((a,s)=>a+Math.max(0,s.recommended-s.proposed),0);
+    const tickets = priced.map(s => s.proposed || s.recommended).sort((a,b)=>a-b);
+    const medianTicket = tickets.length ? tickets[Math.floor(tickets.length/2)] : 0;
+    const kpis = [
+      { label:'Valor total precificado', value: 'R$ '+moneyK(totalPriced)+' mil', delta:priced.length+' precificações', deltaColor:'#3E8E5A' },
+      { label:'Ticket médio', value: 'R$ '+moneyK(totalPriced/(priced.length||1))+' mil', delta:'mediano R$ '+moneyK(medianTicket)+' mil', deltaColor:'#8C857B' },
+      { label:'Margem média realizada', value: pct(avgMarginN,0), delta:'meta 34%', deltaColor:'#3E8E5A' },
+      { label:'Taxa de ganho', value: pct(winRateN,0), delta:decided.length+' decididas', deltaColor:'#8C857B' },
+    ];
+    const bySol = {};
+    priced.forEach(s => { (bySol[s.solution] = bySol[s.solution] || []).push(s); });
+    const maxVal = Math.max(1, ...priced.map(s=>Math.max(s.recommended,s.proposed)));
+    const solutionBars = Object.entries(bySol).slice(0,5).map(([name, arr]) => {
+      const rec = arr.reduce((a,s)=>a+s.recommended,0)/arr.length, real = arr.reduce((a,s)=>a+s.proposed,0)/arr.length;
+      return { name, recPct: (rec/maxVal*100), realPct: (real/maxVal*100), gapLabel: 'R$ '+moneyK(real)+' / '+moneyK(rec) };
+    });
+    const rowify = (s) => ({ id:s.id, title:s.title, client:s.client, solution:s.solution, unit:s.unit||'—',
+      recommended: 'R$ '+moneyK(s.recommended)+'k', proposed:'R$ '+moneyK(s.proposed)+'k', margin: pct(s.margin,0),
+      marginColor: s.margin<0.15?'#C4432B':s.margin<0.25?'#C98A16':'#2F7A4B',
+      statusLabel: STATUS[s.status]?.label||s.status, statusBg: STATUS[s.status]?.bg||'#EDE7DE', statusColor: STATUS[s.status]?.color||'#7A736A' });
+    const sorted = [...priced].sort((a,b)=>b.createdAt-a.createdAt);
+
+    const solutionCards = SOLUTIONS.map(base => { const s = solById(base.id); const on = s.active!==false; return { ...s, target: pct(s.mTarget,0), floorPct: pct(s.mMin,0), activityCount: s.activities.length,
+      activeLabel: on ? (SOL_OVERRIDES[s.id]?'Personalizada':'Ativa') : 'Inativa', activeBg: on?(SOL_OVERRIDES[s.id]?'#FBEEE8':'#E7F0EA'):'#EDE7DE', activeColor: on?(SOL_OVERRIDES[s.id]?'#B84812':'#2F7A4B'):'#7A736A' }; });
+
+    // wizard
+    const stepData = d ? this.stepData(d) : [];
+    const modeBtn = (active) => `padding:8px 16px; border:none; border-radius:7px; font-size:13px; font-weight:700; cursor:pointer; background:${active?'#FBFAF7':'transparent'}; color:${active?'#23201D':'#8C857B'}; box-shadow:${active?'0 1px 2px rgba(0,0,0,0.08)':'none'};`;
+
+    const out = {
+      navItems: nav.map(n => ({ ...n, style: this.navStyle(n.key) })),
+      go: this.go, startNew: this.startNew, onFieldInput: this.onFieldInput, onPick: this.onPick, openSession: this.openSession,
+      role: st.role, roleName: ROLE_NAMES[st.role], roleInitials: ROLE_NAMES[st.role].split(' ').map(w=>w[0]).slice(0,2).join(''),
+      viewTitle: vt, viewSubtitle: vs, view,
+      isDashboard: view==='dashboard', isWizard: view==='wizard', isResult: view==='result', isHistory: view==='history',
+      isSolutions: view==='solutions', isParams: view==='parameters', isReport: view==='report', isMethods: view==='methods', isSettings: view==='settings',
+      settingsContent: view==='settings' ? this.renderSettings() : null,
+      storageDot: this.sbConfigured() ? (st.sbStatus==='ok' ? '#3E8E5A' : '#C98A16') : '#C98A16',
+      storageLabel: this.sbConfigured() ? 'SUPABASE '+(st.sbStatus==='ok'?'CONECTADO':'CONFIGURADO') : 'ARMAZENAMENTO LOCAL',
+      storageDesc: this.sbConfigured() ? 'Dados sincronizados com o banco. Status: '+(st.sbStatus||'aguardando') : 'Dados salvos neste navegador. Conecte o Supabase em Configurações para sincronizar na nuvem.',
+      methodCards: METHODS.map((m,i) => ({ ...m, num: (i+1 < 10 ? '0' : '')+(i+1) })), stepWarn: st.stepWarn || '',
+      kpis, solutionBars, recentRows: sorted.slice(0,5).map(rowify), allRows: sorted.map(rowify), solutionCards,
+      winRate: pct(winRateN,0), winDash: (winRateN*100).toFixed(1)+' 100', avgMargin: pct(avgMarginN,0),
+      discountAvg: pct(discountN,0), belowFloor: String(belowFloorN), lostDiscount: 'R$ '+moneyK(lostDiscN)+'k',
+      steps: stepData, stepKey: d?('s'+d.step):'s1',
+      modeRapidoStyle: modeBtn(d?.mode==='rapido'), modeAvancadoStyle: modeBtn(d?.mode==='avancado'),
+      back: this.back, next: this.next, gotoStep: this.gotoStep, saveNow: this.saveNow, deleteDraft: this.deleteDraft, isEditing: !!(d && d._sid),
+      backStyle: `background:#FBFAF7; border:1px solid #E7E3DC; color:${(d?.step||1)>1?'#4A453E':'#C6BFB4'}; padding:12px 20px; border-radius:10px; font-weight:600; font-size:14px; cursor:${(d?.step||1)>1?'pointer':'default'};`,
+      nextLabel: (d?.step||1)<6 ? 'Continuar →' : 'Calcular e salvar ✓',
+      stepContent: d ? this.renderStep(d) : null,
+      solutionEditor: this.renderSolutionEditor(), editSolution: this.editSolution,
+      resultContent: this.renderResult(),
+      paramsContent: this.renderParams(),
+      reportContent: this.renderReport(),
+    };
+    return out;
+  }
+
+  // ---------- WIZARD STEPS (createElement for dynamic forms) ----------
+  renderStep(d) {
+    const R = React.createElement, self = this;
+    const H = (n, sub) => R('div',{style:{marginBottom:'22px'}}, R('div',{style:{fontSize:'19px',fontWeight:800,color:'#23201D',marginBottom:'4px'}}, n), sub&&R('div',{style:{fontSize:'13.5px',color:'#8C857B'}}, sub));
+    const label = (t,help) => R('label',{style:{display:'block',fontSize:'12.5px',fontWeight:700,color:'#4A453E',marginBottom:'7px'}}, t, help&&R('span',{style:{fontWeight:500,color:'#9A938A'}}, '  '+help));
+    const inputStyle = {width:'100%',padding:'10px 12px',border:'1px solid #DDD8D0',borderRadius:'9px',fontSize:'14px',background:'#fff',fontFamily:'Space Grotesk'};
+    const textStyle = {...inputStyle,fontFamily:'Manrope'};
+    const field = (path, val, type, ph, style) => R('input',{'data-path':path,'data-type':type||'text',value:val==null?'':val,placeholder:ph||'',onChange:self.onFieldInput,style:style||(type==='num'?inputStyle:textStyle)});
+    const sel = (path, val, opts) => R('select',{'data-path':path,value:val,onChange:self.onFieldInput,style:{...textStyle,cursor:'pointer'}}, opts.map(o=>R('option',{key:o[0],value:o[0]},o[1])));
+    const grid = (cols, ...kids) => R('div',{style:{display:'grid',gridTemplateColumns:cols,gap:'16px'}}, ...kids);
+    const cardBtn = (active, onClick, data, ...kids) => R('button',{onClick,...data,style:{textAlign:'left',padding:'14px 15px',border:`1.5px solid ${active?'#DA5B18':'#E2DDD5'}`,borderRadius:'12px',background:active?'#FDF3EC':'#fff',cursor:'pointer'}}, ...kids);
+
+    if (d.step===1) {
+      return R('div',null,
+        H('O que estamos precificando?','Escolha a solução e identifique a precificação.'),
+        R('div',{style:{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'11px',marginBottom:'24px'}},
+          SOLUTIONS.map(b=>solById(b.id)).filter(s => s.active!==false || d.solutionId===s.id).map(s => cardBtn(d.solutionId===s.id, self.onPick, {'data-path':'solutionId','data-val':s.id,key:s.id},
+            R('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:d.solutionId===s.id?'#DA5B18':'#8C857B',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round',style:{marginBottom:'8px'}}, R('path',{d:s.icon})),
+            R('div',{style:{fontSize:'13px',fontWeight:700,color:'#23201D',lineHeight:1.25}}, s.name)))),
+        grid('1fr 1fr',
+          R('div',null, label('Nome interno da precificação'), field('title', d.title,'text','Ex.: Diagnóstico Executivo — Cliente X')),
+          R('div',null, label('Cliente ou prospect'), field('clientName', d.clientName,'text','Nome do cliente'))),
+        R('div',{style:{height:'16px'}}),
+        grid('1fr 1fr',
+          R('div',null, label('Unidade / regional','opcional — para organizar o histórico por equipe ou região'), field('unit', d.unit,'text','Ex.: Matriz, Regional Sul, Filial Curitiba')),
+          R('div',null, label('Responsável'), field('owner', d.owner,'text'))));
+    }
+    const adv = d.mode==='avancado';
+    if (d.step===2) {
+      const sc = d.scope;
+      const hasParticipants = ['trein','games','pal','ment','ia','cont'].includes(d.solutionId);
+      const scaleCard = (path,val,opts) => R('div',{style:{display:'flex',gap:'8px'}}, opts.map(o=>R('button',{key:o[0],'data-path':path,'data-val':o[0],onClick:self.onPick,style:{flex:1,padding:'9px',border:`1.5px solid ${val===o[0]?'#DA5B18':'#E2DDD5'}`,borderRadius:'9px',background:val===o[0]?'#FDF3EC':'#fff',fontSize:'12.5px',fontWeight:600,cursor:'pointer',color:val===o[0]?'#B84812':'#6B655E'}}, o[1])));
+      return R('div',null,
+        H('Qual é o tamanho e a complexidade?', 'Apenas o que importa para '+solById(d.solutionId).name+'.'),
+        grid('1fr 1fr 1fr',
+          R('div',null, label('Duração da entrega'),
+            R('div',{style:{display:'flex',gap:'8px'}},
+              R('input',{'data-path':'scope.duration','data-type':'num',value:sc.duration??'',onChange:self.onFieldInput,style:{...inputStyle,flex:1}}),
+              R('select',{'data-path':'scope.durationUnit',value:sc.durationUnit||'meses',onChange:self.onFieldInput,style:{...textStyle,cursor:'pointer',width:'110px'}}, [['dias','dias'],['semanas','semanas'],['meses','meses']].map(o=>R('option',{key:o[0],value:o[0]},o[1]))))),
+          R('div',null, label('Profissionais VendaMais','pessoas da equipe que atuarão'), field('scope.proCount', sc.proCount,'num')),
+          hasParticipants ? R('div',null, label('Participantes do cliente','impacta materiais, turmas e logística'), field('scope.participants', sc.participants,'num')) : R('div')),
+        R('div',{style:{height:'18px'}}),
+        grid('1fr 1fr',
+          R('div',null, label('Formato','presencial gera horas de deslocamento'), scaleCard('scope.format', sc.format,[['presencial','Presencial'],['online','Online'],['hibrido','Híbrido'],['async','Assíncrono']])),
+          R('div',null, label('Nível de customização','quanto do conteúdo será feito sob medida'), scaleCard('scope.customization', sc.customization,[['baixa','Baixa'],['media','Média'],['alta','Alta']]))),
+        R('div',{style:{height:'18px'}}),
+        grid('1fr 1fr',
+          R('div',null, label('Senioridade exigida','quem o projeto exige à frente'), scaleCard('scope.seniority', sc.seniority,[['pleno','Pleno'],['senior','Sênior'],['socio','Sócio']])),
+          adv ? R('div',null, label('Governança do projeto','comitês, rituais e reporte ao cliente'), scaleCard('scope.governance', sc.governance,[['baixa','Leve'],['media','Média'],['alta','Intensa']])) : R('div')),
+        adv && R('div',{style:{marginTop:'18px'}},
+          grid('1fr 1fr 1fr',
+            R('div',null, label('Turmas / grupos','treinamentos e games'), field('scope.groups', sc.groups,'num')),
+            R('div',null, label('Encontros / sessões previstas'), field('scope.meetings', sc.meetings,'num')),
+            R('div',null, label('Localidades de entrega','cidades diferentes = mais deslocamento'), field('scope.locations', sc.locations,'num')))),
+        R('div',{style:{marginTop:'18px',padding:'12px 15px',background:'#EEF1F3',borderRadius:'10px',fontSize:'12px',color:'#4E6072',lineHeight:1.6}},'Estes campos orientam a estimativa de horas da próxima etapa — customização alta e formato presencial aumentam horas de produção e deslocamento. Nada aqui vira preço diretamente.'));
+    }
+    if (d.step===3) {
+      const canSeeSalary = true; // quem constrói o preço precisa ver os custos; a proteção vale para relatórios e outros perfis
+      const canMonthly = ['cons','bpo','trein'].includes(d.solutionId);
+      const monthly = d.hoursMode==='monthly' && canMonthly;
+      const hMult = self.hoursMult(d);
+      const durM = self.durationMonths(d);
+      const th = {fontSize:'11px',fontWeight:700,color:'#9A938A',textTransform:'uppercase',letterSpacing:'0.04em',padding:'0 8px 8px',textAlign:'left'};
+      const td = {padding:'6px 8px'};
+      const miniInput = (path,val,type,w) => R('input',{'data-path':path,'data-type':type||'num',value:val==null?'':val,onChange:self.onFieldInput,style:{width:w||'70px',padding:'7px 8px',border:'1px solid #DDD8D0',borderRadius:'7px',fontSize:'12.5px',fontFamily:'Space Grotesk',background:'#fff'}});
+      return R('div',null,
+        H('Quem trabalhará e por quanto tempo?', monthly ? 'Horas POR MÊS — o sistema multiplica pela duração de '+durM.toFixed(durM%1?1:0)+' meses definida na etapa 2.' : 'Horas TOTAIS do projeto inteiro — num projeto de 12 meses, informe a soma dos 12 meses. Inclua horas visíveis e invisíveis.'),
+        canMonthly && R('div',{style:{display:'flex',gap:'6px',background:'#EDE7DE',padding:'4px',borderRadius:'10px',width:'fit-content',marginBottom:'14px'}},
+          R('button',{'data-path':'hoursMode','data-val':'total',onClick:self.onPick,style:{padding:'7px 14px',border:'none',borderRadius:'7px',fontSize:'12.5px',fontWeight:700,cursor:'pointer',background:!monthly?'#FBFAF7':'transparent',color:!monthly?'#23201D':'#8C857B',boxShadow:!monthly?'0 1px 2px rgba(0,0,0,0.08)':'none'}},'Horas totais do projeto'),
+          R('button',{'data-path':'hoursMode','data-val':'monthly',onClick:self.onPick,style:{padding:'7px 14px',border:'none',borderRadius:'7px',fontSize:'12.5px',fontWeight:700,cursor:'pointer',background:monthly?'#FBFAF7':'transparent',color:monthly?'#23201D':'#8C857B',boxShadow:monthly?'0 1px 2px rgba(0,0,0,0.08)':'none'}},'Horas por mês × duração')),
+        R('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:'12px'}},
+          R('button',{onClick:self.useModelEstimate,style:{background:'#FDF3EC',border:'1px solid #F4D8C8',color:'#B84812',padding:'8px 13px',borderRadius:'8px',fontSize:'12.5px',fontWeight:700,cursor:'pointer'}}, '✨ Usar estimativa do modelo'),
+          R('div',{style:{fontSize:'12px',color:'#8C857B',display:'flex',alignItems:'center',gap:'6px'}}, '🔓 Visível aqui para quem constrói o preço · fica consolidado e oculto nos relatórios')),
+        R('div',{style:{overflowX:'auto'}}, R('table',{style:{width:'100%',borderCollapse:'collapse',minWidth:'760px'}},
+          R('thead',null, R('tr',null,
+            R('th',{style:th},'Função'), R('th',{style:th},'Vínculo'),
+            R('th',{style:th}, canSeeSalary?'Remuneração':'Custo (oculto)'),
+            adv && R('th',{style:th},'Benefícios'), adv && R('th',{style:th},'Fator enc.'), adv && R('th',{style:th},'% produt.'),
+            R('th',{style:th}, monthly?'Horas/mês':'Horas totais'),
+            R('th',{style:th},'Custo/hora'), R('th',{style:th}, monthly?'Custo total ('+durM.toFixed(durM%1?1:0)+' m)':'Custo total'), R('th',{style:th},''))),
+          R('tbody',null, (d.team||[]).map((m,i) => {
+            const hc = self.memberHourly(m), h = self.memberHours(m);
+            return R('tr',{key:i,style:{borderTop:'1px solid #EFEBE4'}},
+              R('td',{style:td}, R('input',{'data-path':`team.${i}.roleLabel`,value:m.roleLabel,onChange:self.onFieldInput,style:{width:'140px',padding:'7px 8px',border:'1px solid #DDD8D0',borderRadius:'7px',fontSize:'12.5px',background:'#fff'}})),
+              R('td',{style:td}, R('select',{'data-path':`team.${i}.contractType`,value:m.contractType,onChange:self.onFieldInput,style:{padding:'7px 8px',border:'1px solid #DDD8D0',borderRadius:'7px',fontSize:'12px',background:'#fff'}}, [['clt','CLT'],['pj_mensal','PJ mensal'],['pj_hora','PJ hora'],['pj_diaria','PJ diária'],['socio','Sócio'],['parceiro','Parceiro']].map(o=>R('option',{key:o[0],value:o[0]},o[1])))),
+              R('td',{style:td}, canSeeSalary ? miniInput(m.contractType==='pj_hora'||m.contractType==='pj_diaria'?`team.${i}.hourlyRate`:`team.${i}.comp`, m.contractType==='pj_hora'||m.contractType==='pj_diaria'?m.hourlyRate:m.comp,'num','100px') : R('span',{style:{fontFamily:'Space Grotesk',color:'#B5AEA4',letterSpacing:'2px'}},'••••••')),
+              adv && R('td',{style:td}, m.contractType==='clt' ? miniInput(`team.${i}.benefits`, m.benefits,'num','75px') : R('span',{style:{color:'#B5AEA4'}},'—')),
+              adv && R('td',{style:td}, m.contractType==='clt' ? miniInput(`team.${i}.loadedFactor`, m.loadedFactor,'num','58px') : R('span',{style:{color:'#B5AEA4'}},'—')),
+              adv && R('td',{style:td}, miniInput(`team.${i}.productiveRate`, m.productiveRate,'num','58px')),
+              R('td',{style:td}, R('span',{style:{fontFamily:'Space Grotesk',fontWeight:600}}, h.toLocaleString('pt-BR'),'h')),
+              R('td',{style:td}, canSeeSalary?R('span',{style:{fontFamily:'Space Grotesk',color:'#6B655E'}}, money(hc)):R('span',{style:{color:'#B5AEA4'}},'—')),
+              R('td',{style:td}, R('span',{style:{fontFamily:'Space Grotesk',fontWeight:700}}, canSeeSalary?money(hc*h*hMult):'consolidado')),
+              R('td',{style:td}, R('button',{'data-i':i,onClick:self.removeMember,style:{border:'none',background:'none',color:'#C4432B',cursor:'pointer',fontSize:'13px'}},'✕')));
+          }))),
+        ),
+        R('button',{onClick:self.addMember,style:{marginTop:'12px',background:'#fff',border:'1px dashed #C6BFB4',color:'#6B655E',padding:'10px',borderRadius:'9px',fontSize:'13px',fontWeight:600,cursor:'pointer',width:'100%'}},'+ Adicionar profissional'),
+        (d.team||[]).map((m,mi) => R('div',{key:mi,style:{marginTop:'16px',padding:'14px 16px',background:'#F6F3EE',borderRadius:'11px'}},
+          R('div',{style:{fontSize:'12px',fontWeight:700,color:'#4A453E',marginBottom:'10px'}},'Horas por atividade'+(monthly?' (por mês)':'')+' — '+(m.roleLabel||('Profissional '+(mi+1)))+(monthly?' · total no projeto: '+Math.round(self.memberHours(m)*hMult).toLocaleString('pt-BR')+'h':'')),
+          R('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(120px,1fr))',gap:'9px'}},
+            ACTIVITY_KEYS.map(k => R('div',{key:k},
+              R('div',{style:{fontSize:'11px',color:'#8C857B',marginBottom:'4px'}}, ACTIVITY_LABELS[k]),
+              R('input',{'data-path':`team.${mi}.hours.${k}`,'data-type':'num',value:(m.hours?.[k])??'',onChange:self.onFieldInput,style:{width:'100%',padding:'6px 8px',border:'1px solid #DDD8D0',borderRadius:'6px',fontSize:'12.5px',fontFamily:'Space Grotesk',background:'#fff'}})))))));
+    }
+    if (d.step===4) {
+      const c = d.costs, p = d.payment;
+      const totPct = (p.installments||[]).reduce((a,x)=>a+(Number(x.pct)||0),0);
+      return R('div',null,
+        H(adv?'Custos, impostos, comissão e pagamento':'Custos diretos do projeto', adv?'Deslocamento das pessoas é custo. Viagens são cobradas à parte.':'Só o essencial — impostos, comissão e pagamento usam os padrões da VendaMais.'),
+        grid('1fr 1fr 1fr',
+          R('div',null, label('Fornecedores','R$'), field('costs.suppliers', c.suppliers,'num')),
+          R('div',null, label('Tecnologia/licenças','R$'), field('costs.tech', c.tech,'num')),
+          R('div',null, label('Materiais','R$'), field('costs.materials', c.materials,'num'))),
+        !adv && R('div',{style:{marginTop:'18px',padding:'14px 16px',background:'#F6F3EE',borderRadius:'11px',fontSize:'12.5px',color:'#6B655E',lineHeight:1.7}},
+          R('strong',{style:{color:'#4A453E'}},'Padrões em uso no modo rápido: '),'imposto '+(d.taxRate??20)+'% · overhead '+(c.overheadPct??12)+'% s/ mão de obra · contingência '+(c.contingencyPct??8)+'% · comissão de vendas '+((d.commissions?.[0]?.rate)??5)+'% · pagamento 100% em 30 dias (taxa '+(d.payment?.annualRate??12)+'% a.a.). Passe para o ',
+          R('strong',{style:{color:'#B84812'}},'modo avançado'),' para ajustar qualquer um deles.'),
+        adv && R('div',null,
+        R('div',{style:{height:'16px'}}),
+        grid('1fr 1fr 1fr 1fr',
+          R('div',null, label('Imposto s/ receita','%'), field('taxRate', d.taxRate,'num')),
+          R('div',null, label('Overhead s/ M.O.','%'), field('costs.overheadPct', c.overheadPct,'num')),
+          R('div',null, label('Contingência','% de risco'), field('costs.contingencyPct', c.contingencyPct,'num')),
+          R('div',null, label('Custo de oportunidade','R$ — o que a equipe deixa de fazer'), field('costs.oppCost', c.oppCost,'num'))),
+        R('div',{style:{height:'20px'}}),
+        R('div',{style:{fontSize:'13px',fontWeight:700,color:'#4A453E',marginBottom:'10px'}},'Comissões'),
+        (d.commissions||[]).map((cm,i)=>R('div',{key:i,style:{display:'grid',gridTemplateColumns:'2fr 1fr 2fr 0.3fr',gap:'10px',marginBottom:'8px',alignItems:'center'}},
+          R('input',{'data-path':`commissions.${i}.label`,value:cm.label,onChange:self.onFieldInput,style:textStyle}),
+          R('input',{'data-path':`commissions.${i}.rate`,'data-type':'num',value:cm.rate,onChange:self.onFieldInput,style:inputStyle}),
+          R('select',{'data-path':`commissions.${i}.base`,value:cm.base,onChange:self.onFieldInput,style:{...textStyle,cursor:'pointer'}}, [['gross','sobre preço bruto'],['net','sobre receita líquida'],['received','sobre valor recebido']].map(o=>R('option',{key:o[0],value:o[0]},o[1]))),
+          R('button',{'data-i':i,onClick:self.removeCommission,style:{border:'none',background:'none',color:'#C4432B',cursor:'pointer',fontSize:'13px'}},'✕'))),
+        R('button',{onClick:self.addCommission,style:{background:'#fff',border:'1px dashed #C6BFB4',color:'#6B655E',padding:'8px 12px',borderRadius:'8px',fontSize:'12.5px',fontWeight:600,cursor:'pointer',marginBottom:'20px'}},'+ Comissão'),
+        R('div',{style:{fontSize:'13px',fontWeight:700,color:'#4A453E',marginBottom:'10px',display:'flex',justifyContent:'space-between'}}, R('span',null,'Condições de pagamento'), R('span',{style:{fontFamily:'Space Grotesk',color:totPct===100?'#2F7A4B':'#C4432B'}}, 'Soma: '+totPct+'%')),
+        grid('1fr 1fr',
+          R('div',null, label('Taxa financeira anual','%'), field('payment.annualRate', p.annualRate,'num')),
+          R('div',null, label('Fonte da taxa'), sel('payment.rateSource', p.rateSource,[['CDI','CDI'],['Selic','Selic'],['interno','Custo de capital interno'],['custom','Personalizada']]))),
+        R('div',{style:{marginTop:'12px'}},
+          (p.installments||[]).map((ins,i)=>R('div',{key:i,style:{display:'grid',gridTemplateColumns:'2fr 2fr 0.5fr',gap:'10px',marginBottom:'8px',alignItems:'center'}},
+            R('div',null, R('span',{style:{fontSize:'11px',color:'#8C857B'}},'Parcela '+(i+1)+' — %'), field(`payment.installments.${i}.pct`, ins.pct,'num')),
+            R('div',null, R('span',{style:{fontSize:'11px',color:'#8C857B'}},'Dias p/ recebimento'), field(`payment.installments.${i}.days`, ins.days,'num')),
+            R('button',{'data-i':i,onClick:self.removeInstallment,style:{border:'none',background:'none',color:'#C4432B',cursor:'pointer',marginTop:'16px'}},'✕'))),
+          R('button',{onClick:self.addInstallment,style:{background:'#fff',border:'1px dashed #C6BFB4',color:'#6B655E',padding:'8px 12px',borderRadius:'8px',fontSize:'12.5px',fontWeight:600,cursor:'pointer'}},'+ Parcela'))),
+        R('div',{style:{marginTop:'18px',padding:'12px 15px',background:'#EEF1F3',borderRadius:'10px',fontSize:'12px',color:'#4E6072',lineHeight:1.5}},'Passagens, alimentação e hospedagem são cobradas separadamente do cliente e não compõem o preço do serviço. O tempo das pessoas em deslocamento compõe o custo do projeto.'));
+    }
+    if (d.step===5) {
+      const v = d.value, sc = d.strategic.scores;
+      const slider = (key, lbl) => R('div',{key,style:{marginBottom:'11px'}},
+        R('div',{style:{display:'flex',justifyContent:'space-between',fontSize:'12px',marginBottom:'4px'}}, R('span',{style:{color:'#4A453E',fontWeight:600}},lbl), R('span',{style:{fontFamily:'Space Grotesk',color:'#8C857B'}},sc[key])),
+        R('input',{type:'range',min:0,max:100,'data-path':`strategic.scores.${key}`,'data-type':'num',value:sc[key],onChange:self.onFieldInput,style:{width:'100%',accentColor:'#DA5B18'}}));
+      const diff = d.differentiation;
+      const chk = (key,lbl)=>{ const on = diff[key]===true; return R('button',{key,'data-k':key,onClick:self.toggleDiff,style:{display:'flex',alignItems:'center',gap:'8px',padding:'9px 12px',border:`1.5px solid ${on?'#DA5B18':'#E2DDD5'}`,borderRadius:'9px',background:on?'#FDF3EC':'#fff',cursor:'pointer',fontSize:'12.5px',fontWeight:600,color:on?'#B84812':'#6B655E',width:'100%',textAlign:'left'}}, R('span',{style:{width:'16px',height:'16px',borderRadius:'5px',border:`1.5px solid ${on?'#DA5B18':'#C6BFB4'}`,background:on?'#DA5B18':'#fff',color:'#fff',fontSize:'11px',display:'flex',alignItems:'center',justifyContent:'center'}}, on?'✓':''), lbl); };
+      const exImpact = Number(v.impact12m)||500000, exConf = Number(v.confidence)||50, exCap = Number(v.capturePct)||15;
+      return R('div',null,
+        H('Quanto o projeto vale para o cliente?','Opcional — mas quanto melhor esta etapa, mais o preço reflete valor, e não só custo.'),
+        R('div',{style:{marginBottom:'20px',padding:'14px 16px',background:'#EEF1F3',borderRadius:'11px',fontSize:'12.5px',color:'#4E6072',lineHeight:1.65}},
+          R('strong',null,'Como preencher: '),'estime quanto o cliente pode ganhar ou deixar de perder em 12 meses por causa do projeto (mais vendas, menos perdas, menos retrabalho). Depois diga sua confiança nessa conta. Exemplo com seus números atuais: impacto de '+money(exImpact)+' × '+exConf+'% de confiança = valor conservador de '+money(exImpact*exConf/100)+'. A VendaMais captura '+exCap+'% disso → âncora de valor de '+money(exImpact*exConf/100*exCap/100)+'. Se não souber, deixe em zero — o sistema usa custo e histórico e reduz a confiança.'),
+        grid('1fr 1fr',
+          R('div',null,
+            label('Impacto econômico estimado em 12 meses','R$ — quanto o cliente ganha/economiza'), field('value.impact12m', v.impact12m,'num'),
+            R('div',{style:{height:'14px'}}),
+            label('Confiança nessa estimativa','0% = palpite · 100% = comprovado com dados'), field('value.confidence', v.confidence,'num'),
+            R('div',{style:{height:'14px'}}),
+            label('% de captura de valor','fatia do valor criado que vira preço; 10–20% é comum'), field('value.capturePct', v.capturePct,'num'),
+            R('div',{style:{marginTop:'16px',fontSize:'12.5px',fontWeight:700,color:'#4A453E',marginBottom:'9px'}},'Prêmio de Diferenciação VendaMais'),
+            R('div',{style:{display:'flex',flexDirection:'column',gap:'7px'}},
+              chk('methodology','Metodologia proprietária'), chk('rareExpert','Exige especialista raro/sócio'),
+              chk('cases','Cases relevantes comprováveis'), chk('valuesBrand','Cliente valoriza a marca VendaMais')),
+            R('div',{style:{marginTop:'14px'}},
+              label('Evidência ou justificativa','exigida para sustentar premium de marca'),
+              field('differentiation.evidence', diff.evidence,'text','Ex.: case no mesmo setor, metodologia Vendópolis, especialista reconhecido')),
+            R('div',{style:{marginTop:'18px'}},
+              R('div',{style:{fontSize:'12.5px',fontWeight:700,color:'#4A453E',marginBottom:'4px'}},'Referências de mercado (opcional)'),
+              R('div',{style:{fontSize:'11.5px',color:'#9A938A',marginBottom:'9px'}},'Propostas concorrentes ou preços conhecidos — habilitam a âncora de mercado.'),
+              (d.market?.competitors||[]).map((cp,i)=>R('div',{key:i,style:{display:'grid',gridTemplateColumns:'2fr 1.2fr 0.3fr',gap:'8px',marginBottom:'7px',alignItems:'center'}},
+                R('input',{'data-path':`market.competitors.${i}.name`,value:cp.name,placeholder:'Concorrente / referência',onChange:self.onFieldInput,style:{...textStyle,padding:'8px 10px',fontSize:'12.5px'}}),
+                R('input',{'data-path':`market.competitors.${i}.price`,'data-type':'num',value:cp.price||'',placeholder:'R$',onChange:self.onFieldInput,style:{...inputStyle,padding:'8px 10px',fontSize:'12.5px'}}),
+                R('button',{'data-i':i,onClick:self.removeCompetitor,style:{border:'none',background:'none',color:'#C4432B',cursor:'pointer',fontSize:'13px'}},'✕'))),
+              R('button',{onClick:self.addCompetitor,style:{background:'#fff',border:'1px dashed #C6BFB4',color:'#6B655E',padding:'7px 11px',borderRadius:'8px',fontSize:'12px',fontWeight:600,cursor:'pointer'}},'+ Referência'))),
+          adv ? R('div',null,
+            R('div',{style:{fontSize:'12.5px',fontWeight:700,color:'#4A453E',marginBottom:'6px'}},'Score estratégico (0–100)'),
+            R('div',{style:{fontSize:'12px',color:'#6B655E',lineHeight:1.6,marginBottom:'12px',padding:'10px 12px',background:'#F6F3EE',borderRadius:'9px'}},'Mede o quanto o contexto permite cobrar mais (ou exige cobrar menos). 50 = neutro. Cada ponto acima de 50 soma 1% ao preço recomendado; abaixo, subtrai — limitado entre −20% e +50%. Ex.: cliente grande, com urgência e pouca concorrência → score alto → preço maior.'),
+            slider('porte','Porte e escala do cliente'), slider('impacto','Impacto econômico'), slider('urgencia','Urgência e velocidade'),
+            slider('diferenciacao','Diferenciação comprovada'), slider('competicao','Intensidade competitiva'),
+            slider('complexidade','Complexidade'), slider('senioridade','Senioridade exigida'), slider('escassez','Escassez de capacidade'),
+            slider('marca','Força da marca'), slider('recorrencia','Potencial de recorrência'))
+          : R('div',{style:{padding:'16px 18px',background:'#F6F3EE',borderRadius:'12px',fontSize:'12.5px',color:'#6B655E',lineHeight:1.7,alignSelf:'start'}},
+            R('div',{style:{fontWeight:700,color:'#4A453E',marginBottom:'6px'}},'Score estratégico — só no modo avançado'),
+            'No modo rápido o sistema usa o ponto neutro: o preço não é ajustado para cima nem para baixo pelo contexto. Se este cliente é muito grande, tem urgência ou há pouca concorrência, abra o ',
+            R('strong',{style:{color:'#B84812'}},'modo avançado'),' para refletir isso no preço (ajuste de −20% a +50%).')));
+    }
+    if (d.step===6) {
+      const r = this.compute(d);
+      const anchorCard = (t, val, sub, hi) => R('div',{style:{flex:1,padding:'16px 17px',borderRadius:'13px',border:`1.5px solid ${hi?'#DA5B18':'#E2DDD5'}`,background:hi?'linear-gradient(160deg,#FDF3EC,#FBFAF7)':'#fff'}},
+        R('div',{style:{fontSize:'12px',fontWeight:700,color:hi?'#B84812':'#8C857B',marginBottom:'8px'}},t),
+        R('div',{style:{fontFamily:'Space Grotesk',fontSize:'23px',fontWeight:600,color:'#23201D'}},money(val)),
+        R('div',{style:{fontSize:'11.5px',color:'#9A938A',marginTop:'3px'}},sub));
+      return R('div',null,
+        H('Pré-visualização do resultado','Confirme para calcular, salvar e abrir o relatório completo.'),
+        R('div',{style:{display:'flex',gap:'11px',marginBottom:'18px'}},
+          anchorCard('Piso absoluto', r.floor, 'margem mín. '+pct(r.sol.mMin,0)),
+          anchorCard('Sustentável', r.sustainable, 'margem-alvo '+pct(r.sol.mTarget,0)),
+          anchorCard('Recomendado', r.recommended, 'margem '+pct(r.marginRec,0), true),
+          anchorCard('Premium', r.premiumTop, 'até '+pct(r.sol.mPremium,0))),
+        R('div',{style:{display:'flex',gap:'14px',padding:'16px 18px',background:'#F6F3EE',borderRadius:'12px',fontSize:'13px'}},
+          R('div',null, R('div',{style:{color:'#8C857B',fontSize:'11.5px',fontWeight:600}},'Custo econômico'), R('div',{style:{fontFamily:'Space Grotesk',fontWeight:700,fontSize:'16px'}},money(r.economicCost))),
+          R('div',null, R('div',{style:{color:'#8C857B',fontSize:'11.5px',fontWeight:600}},'Horas totais'), R('div',{style:{fontFamily:'Space Grotesk',fontWeight:700,fontSize:'16px'}},r.totalHours.toLocaleString('pt-BR')+'h')),
+          R('div',null, R('div',{style:{color:'#8C857B',fontSize:'11.5px',fontWeight:600}},'Confiança'), R('div',{style:{fontFamily:'Space Grotesk',fontWeight:700,fontSize:'16px'}},r.confidence+'/100')),
+          R('div',null, R('div',{style:{color:'#8C857B',fontSize:'11.5px',fontWeight:600}},'Valor econômico'), R('div',{style:{fontFamily:'Space Grotesk',fontWeight:700,fontSize:'16px'}},money(r.economicValue)))));
+    }
+    return null;
+  }
+
+  // ---------- RESULT ----------
+  renderResult() {
+    const s = this.activeSession(); if (!s) return null;
+    const R = React.createElement, self = this;
+    const d = s.draft, r = this.compute(d);
+    const tab = this.state.resultTab;
+    const flex = this.state.flexPrice ?? r.recommended;
+
+    const anchor = (t, val, sub, hi, color) => R('div',{style:{flex:1,padding:'20px 22px',borderRadius:'15px',border:`1.5px solid ${hi?'#DA5B18':'#E2DDD5'}`,background:hi?'linear-gradient(160deg,#FDF3EC,#fff)':'#FBFAF7',position:'relative'}},
+      hi&&R('span',{style:{position:'absolute',top:'-9px',left:'22px',background:'#DA5B18',color:'#fff',fontSize:'10.5px',fontWeight:700,padding:'3px 10px',borderRadius:'20px'}},'RECOMENDADO'),
+      R('div',{style:{fontSize:'12.5px',fontWeight:700,color:hi?'#B84812':'#8C857B',marginBottom:'9px'}},t),
+      R('div',{style:{fontFamily:'Space Grotesk',fontSize:'27px',fontWeight:600,color:color||'#23201D',letterSpacing:'-0.01em'}},money(val)),
+      R('div',{style:{fontSize:'12px',color:'#9A938A',marginTop:'4px'}},sub));
+
+    const tabs = [['resumo','Resumo executivo'],['custo','Composição'],['valor','Valor e WTP'],['mercado','Mercado'],['pagamento','Pagamento e VP'],['cenarios','Cenários'],['flex','Flexibilidade'],['premissas','Premissas e riscos']];
+
+    const header = R('div',{style:{padding:'22px 30px 0'}},
+      R('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'18px'}},
+        R('div',null,
+          R('div',{style:{display:'flex',alignItems:'center',gap:'10px',marginBottom:'5px'}},
+            R('span',{style:{fontSize:'20px',fontWeight:800}}, s.title),
+            R('select',{value:s.status,onChange:self.setStatus,title:'Status da proposta — ganho e perdido alimentam o painel e o histórico',style:{fontSize:'11.5px',fontWeight:700,padding:'4px 8px',borderRadius:'20px',border:'1.5px solid '+(STATUS[s.status]?.color||'#7A736A')+'33',background:STATUS[s.status]?.bg||'#EDE7DE',color:STATUS[s.status]?.color||'#7A736A',cursor:'pointer'}},
+              Object.entries(STATUS).map(([k,v])=>R('option',{key:k,value:k},v.label)))),
+          R('div',{style:{fontSize:'13px',color:'#8C857B'}}, s.solution+' · '+s.unit+' · '+s.client)),
+        R('div',{style:{display:'flex',gap:'9px'}},
+          R('button',{onClick:self.editSession,style:{background:'#FBFAF7',border:'1px solid #E7E3DC',padding:'9px 14px',borderRadius:'9px',fontSize:'13px',fontWeight:600,cursor:'pointer'}},'Editar'),
+          R('button',{onClick:self.duplicateSession,style:{background:'#FBFAF7',border:'1px solid #E7E3DC',padding:'9px 14px',borderRadius:'9px',fontSize:'13px',fontWeight:600,cursor:'pointer'}},'Duplicar'),
+          R('button',{onClick:self.gotoReport,style:{background:'#DA5B18',color:'#fff',border:'none',padding:'9px 16px',borderRadius:'9px',fontSize:'13px',fontWeight:700,cursor:'pointer'}},'Relatório completo →'))),
+      R('div',{style:{display:'flex',gap:'12px',marginBottom:'18px'}},
+        anchor('Piso absoluto', r.floor, 'margem mín. '+pct(r.sol.mMin,0), false, '#C4432B'),
+        anchor('Sustentável', r.sustainable, 'margem-alvo '+pct(r.sol.mTarget,0)),
+        anchor('Recomendado', r.recommended, 'margem '+pct(r.marginRec,0), true),
+        anchor('Faixa premium', r.premiumTop, 'até '+pct(r.sol.mPremium,0), false, '#2F7A4B')),
+      R('div',{style:{display:'flex',gap:'10px',borderBottom:'1px solid #E7E3DC',overflowX:'auto'}},
+        tabs.map(t=>R('button',{key:t[0],'data-tab':t[0],onClick:self.setTab,style:{background:'none',border:'none',borderBottom:`2.5px solid ${tab===t[0]?'#DA5B18':'transparent'}`,padding:'11px 3px',marginRight:'8px',fontSize:'13px',fontWeight:tab===t[0]?700:500,color:tab===t[0]?'#23201D':'#8C857B',cursor:'pointer',whiteSpace:'nowrap'}}, t[1]))));
+
+    const body = R('div',{style:{padding:'22px 30px 50px',maxWidth:'1080px',animation:'vmfade .25s ease'},key:tab}, this.renderResultTab(tab, r, d, flex));
+    return R('div',null, header, body);
+  }
+
+  renderResultTab(tab, r, d, flex) {
+    const R = React.createElement, self = this;
+    const card = (kids, style) => R('div',{style:{background:'#FBFAF7',border:'1px solid #E7E3DC',borderRadius:'14px',padding:'20px 22px',...(style||{})}}, kids);
+    const stat = (l,v,c) => R('div',null, R('div',{style:{fontSize:'12px',color:'#8C857B',fontWeight:600,marginBottom:'4px'}},l), R('div',{style:{fontFamily:'Space Grotesk',fontSize:'20px',fontWeight:600,color:c||'#23201D'}},v));
+
+    if (tab==='resumo') {
+      return R('div',{style:{display:'grid',gridTemplateColumns:'1.4fr 1fr',gap:'16px'}},
+        card(R('div',null,
+          R('div',{style:{fontSize:'14px',fontWeight:700,marginBottom:'16px'}},'Por que este é o preço'),
+          R('p',{style:{fontSize:'13.5px',lineHeight:1.7,color:'#4A453E'}},
+            'O preço recomendado equilibra o custo econômico da entrega ('+money(r.economicCost)+'), a margem-alvo de '+pct(r.sol.mTarget,0)+' da solução e o valor provável para o cliente. A principal pressão de custo está em '+(Object.entries(r.byActivity).sort((a,b)=>b[1]-a[1])[0]?.[0] ? ACTIVITY_LABELS[Object.entries(r.byActivity).sort((a,b)=>b[1]-a[1])[0][0]].toLowerCase() : 'preparação')+' e na senioridade da equipe. '),
+          R('p',{style:{fontSize:'13.5px',lineHeight:1.7,color:'#4A453E',marginTop:'10px'}},
+            r.valuePrice>0 ? 'O valor econômico estimado ('+money(r.economicValue)+') sustenta uma disposição a pagar acima do custo, com captura de '+pct((d.value?.capturePct||0)/100,0)+'. ' : 'Há poucos dados de valor econômico; a recomendação apoia-se sobretudo no custo e no histórico, com confiança reduzida. ',
+            'Há espaço controlado para flexibilização mediante redução de escopo ou melhora nas condições de pagamento.')),
+        ),
+        R('div',{style:{display:'flex',flexDirection:'column',gap:'14px'}},
+          card((() => {
+            const typed = d.proposedPrice;
+            const price = typed || r.recommended;
+            const m = r.marginAt(price);
+            const mColor = price<r.floor?'#C4432B':m<r.sol.mTarget?'#C98A16':'#2F7A4B';
+            const note = price<r.floor?'⚠ Abaixo do piso — exige aprovação executiva.':price<r.sustainable?'Abaixo do sustentável — negocie contrapartida.':price>r.recommended?'Acima do recomendado — ótimo, sustente com valor.':'Dentro da faixa saudável.';
+            return R('div',null,
+              R('div',{style:{fontSize:'13px',fontWeight:700,marginBottom:'4px'}},'Quanto você vai cobrar?'),
+              R('div',{style:{fontSize:'11.5px',color:'#8C857B',marginBottom:'10px'}},'Informe o valor proposto ao cliente — a margem real é calculada na hora.'),
+              R('div',{style:{display:'flex',gap:'10px',alignItems:'center'}},
+                R('span',{style:{fontFamily:'Space Grotesk',fontSize:'15px',color:'#8C857B'}},'R$'),
+                R('input',{'type':'number',value:typed??'',placeholder:String(Math.round(r.recommended)),onChange:self.setProposed,style:{flex:1,padding:'10px 12px',border:'1.5px solid #DDD8D0',borderRadius:'9px',fontSize:'17px',fontFamily:'Space Grotesk',fontWeight:600,background:'#fff'}})),
+              R('div',{style:{display:'flex',justifyContent:'space-between',marginTop:'12px',alignItems:'baseline'}},
+                R('span',{style:{fontSize:'12px',color:'#8C857B',fontWeight:600}},'Margem neste preço'),
+                R('span',{style:{fontFamily:'Space Grotesk',fontSize:'22px',fontWeight:700,color:mColor}}, pct(m,1))),
+              R('div',{style:{marginTop:'8px',fontSize:'11.5px',fontWeight:600,color:mColor}}, note));
+          })()),
+          card(R('div',null,
+            R('div',{style:{fontSize:'13px',fontWeight:700,marginBottom:'14px'}},'Indicadores — no preço proposto'),
+            R('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'16px'}},
+              stat('Receita líquida', money(r.netAt(r.proposed))), stat('Custo econômico', money(r.economicCost)),
+              stat('Margem em R$', money(r.netAt(r.proposed)-r.economicCost), (r.netAt(r.proposed)-r.economicCost)<0?'#C4432B':'#2F7A4B'), stat('Valor presente', money(r.proposed*r.pvFrac))),
+            R('div',{style:{marginTop:'14px',padding:'10px 12px',background:'#F6F3EE',borderRadius:'9px',fontSize:'11.5px',color:'#6B655E',lineHeight:1.6}},'Receita líquida = preço − impostos, comissões e custo do prazo. Margem = receita líquida − custo econômico ('+money(r.netAt(r.proposed))+' − '+money(r.economicCost)+' = '+money(r.netAt(r.proposed)-r.economicCost)+', ou '+pct(r.marginProp,1)+' do preço).'))),
+          card(R('div',null,
+            R('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:'10px'}}, R('span',{style:{fontSize:'13px',fontWeight:700}},'Grau de confiança'), R('span',{style:{fontFamily:'Space Grotesk',fontWeight:700,color:r.confidence>=70?'#2F7A4B':r.confidence>=45?'#C98A16':'#C4432B'}}, r.confidence+'/100')),
+            R('div',{style:{height:'8px',background:'#EDE7DE',borderRadius:'5px',overflow:'hidden'}}, R('div',{style:{height:'100%',width:r.confidence+'%',background:r.confidence>=70?'#3E8E5A':r.confidence>=45?'#C98A16':'#C4432B',borderRadius:'5px'}})),
+            R('div',{style:{fontSize:'11.5px',color:'#8C857B',marginTop:'8px'}},'Baseado em '+r.elig.length+(r.elig.length===1?' âncora elegível':' âncoras elegíveis')+' ('+r.elig.map(a=>a.name).join(', ')+') e na completude dos dados.')))));
+    }
+
+    if (tab==='custo') {
+      const rows = [
+        ['Mão de obra direta', r.labor], ['Fornecedores', r.suppliers], ['Tecnologia', r.tech],
+        ['Materiais', r.materials], ['Overhead', r.overhead], ['Contingência', r.contingency],
+      ];
+      const price = r.proposed;
+      const marginVal = r.netAt(price) - r.economicCost;
+      const wf = [
+        ['Preço proposto', price, '#C6BFB4'], ['− Impostos', -price*r.taxRate, '#C4432B'], ['− Comissões', -price*r.commEff, '#C4432B'],
+        ['− Custo financeiro', -price*r.financialFrac, '#C98A16'], ['− Custo econômico', -r.economicCost, '#5B6B7A'], ['= Margem', marginVal, marginVal<0?'#C4432B':'#3E8E5A'],
+      ];
+      let cum = price; const maxWf = Math.max(1, price);
+      const wfRows = wf.map((w,i) => {
+        const isFirst = i===0, isLast = i===wf.length-1, val = w[1];
+        let leftPct, widthPct;
+        if (isFirst) { leftPct=0; widthPct=100; }
+        else if (isLast) { leftPct=0; widthPct=clamp(Math.abs(val)/maxWf*100,0,100); }
+        else { const next = cum + val; leftPct=clamp(Math.min(cum,next)/maxWf*100,0,100); widthPct=clamp(Math.abs(val)/maxWf*100,0,100-leftPct); cum = next; }
+        return R('div',{key:i,style:{display:'grid',gridTemplateColumns:'160px 1fr 120px',alignItems:'center',gap:'12px'}},
+          R('span',{style:{fontSize:'12.5px',fontWeight:(isFirst||isLast)?700:500,color:'#4A453E'}}, w[0]),
+          R('div',{style:{position:'relative',height:'24px',background:'#F1EEE8',borderRadius:'6px',overflow:'hidden'}}, R('div',{style:{position:'absolute',top:0,height:'24px',left:leftPct+'%',width:widthPct+'%',background:w[2],borderRadius:'6px'}})),
+          R('span',{style:{fontFamily:'Space Grotesk',fontSize:'13px',fontWeight:600,textAlign:'right',color:(isLast?(val<0?'#C4432B':'#2F7A4B'):(val<0?'#C4432B':'#23201D'))}}, (isFirst||isLast)?money(val):money(Math.abs(val))));
+      });
+      const maxH = Math.max(1, ...Object.values(r.byActivity));
+      const hoursRows = Object.entries(r.byActivity).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]).map(([k,v]) =>
+        R('div',{key:k,style:{display:'grid',gridTemplateColumns:'110px 1fr 40px',alignItems:'center',gap:'8px',fontSize:'12px'}},
+          R('span',{style:{color:'#6B655E'}}, ACTIVITY_LABELS[k]),
+          R('div',{style:{height:'12px',background:'#EDE7DE',borderRadius:'4px'}}, R('div',{style:{height:'12px',width:(v/maxH*100)+'%',background:'#5B6B7A',borderRadius:'4px'}})),
+          R('span',{style:{fontFamily:'Space Grotesk',textAlign:'right',color:'#6B655E'}}, v+'h')));
+      const costRows = rows.map((row,i) =>
+        R('div',{key:i,style:{display:'flex',justifyContent:'space-between',padding:'7px 0',borderTop:i?'1px solid #EFEBE4':'none',fontSize:'13px'}},
+          R('span',{style:{color:'#4A453E'}}, row[0]), R('span',{style:{fontFamily:'Space Grotesk',fontWeight:600}}, money(row[1]))));
+      return R('div',null,
+        card(R('div',null,
+          R('div',{style:{fontSize:'14px',fontWeight:700,marginBottom:'16px'}}, 'Price Waterfall — do preço proposto ('+money(price)+') à margem'),
+          R('div',{style:{display:'flex',flexDirection:'column',gap:'8px'}}, wfRows))),
+        R('div',{style:{height:'16px'}}),
+        R('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'16px'}},
+          card(R('div',null,
+            R('div',{style:{fontSize:'14px',fontWeight:700,marginBottom:'14px'}}, 'Custo econômico total: '+money(r.economicCost)),
+            costRows)),
+          card(R('div',null,
+            R('div',{style:{fontSize:'14px',fontWeight:700,marginBottom:'14px'}}, 'Horas por atividade'),
+            R('div',{style:{display:'flex',flexDirection:'column',gap:'6px'}}, hoursRows)))));
+    }
+
+    if (tab==='valor') {
+      const wtp = r.economicValue, price = r.proposed, cost = r.economicCost;
+      const max = Math.max(wtp, price*1.1, 1);
+      const bar = (label, val, color, note) => R('div',{style:{marginBottom:'16px'}},
+        R('div',{style:{display:'flex',justifyContent:'space-between',fontSize:'12.5px',marginBottom:'6px'}}, R('span',{style:{fontWeight:600,color:'#4A453E'}},label), R('span',{style:{fontFamily:'Space Grotesk',fontWeight:600}},money(val))),
+        R('div',{style:{height:'26px',background:'#F1EEE8',borderRadius:'7px'}}, R('div',{style:{height:'26px',width:(val/max*100)+'%',background:color,borderRadius:'7px'}})),
+        note&&R('div',{style:{fontSize:'11px',color:'#9A938A',marginTop:'4px'}},note));
+      return R('div',{style:{display:'grid',gridTemplateColumns:'1.3fr 1fr',gap:'16px'}},
+        card(R('div',null, R('div',{style:{fontSize:'14px',fontWeight:700,marginBottom:'18px'}},'Value Stick — Harvard'),
+          bar('Disposição a pagar (WTP est.)', wtp, '#3E8E5A', 'Valor econômico conservador × confiança'),
+          bar('Preço proposto', price, '#DA5B18'),
+          bar('Custo econômico', cost, '#5B6B7A'),
+          R('div',{style:{display:'flex',gap:'20px',marginTop:'8px',paddingTop:'14px',borderTop:'1px solid #EFEBE4'}},
+            R('div',null, R('div',{style:{fontSize:'11.5px',color:'#8C857B'}},'Valor p/ o cliente'), R('div',{style:{fontFamily:'Space Grotesk',fontWeight:700,color:'#3E8E5A'}}, money(Math.max(0, wtp - price)))),
+            R('div',null, R('div',{style:{fontSize:'11.5px',color:'#8C857B'}},'Valor p/ VendaMais'), R('div',{style:{fontFamily:'Space Grotesk',fontWeight:700,color:'#DA5B18'}}, money(price-cost)))))),
+        card(R('div',null, R('div',{style:{fontSize:'14px',fontWeight:700,marginBottom:'14px'}},'Valor econômico'),
+          stat('Impacto 12m informado', money(d.value?.impact12m||0)),
+          R('div',{style:{height:'12px'}}),
+          stat('Confiança aplicada', pct((d.value?.confidence||0)/100,0), '#C98A16'),
+          R('div',{style:{height:'12px'}}),
+          stat('Valor conservador', money(r.economicValue)),
+          R('div',{style:{height:'12px'}}),
+          stat('Preço por valor', money(r.valuePrice), '#3E8E5A'),
+          (d.value?.impact12m||0)===0 && R('div',{style:{marginTop:'14px',padding:'12px',background:'#FBEEE8',borderRadius:'9px',fontSize:'12px',color:'#B84812',lineHeight:1.5}},'Ainda há poucos dados para estimar quanto este cliente pode aceitar investir. O sistema usa referências internas e reduz o grau de confiança.'))));
+    }
+
+    if (tab==='mercado') {
+      const comps = (d.market?.competitors||[]);
+      return card(R('div',null, R('div',{style:{fontSize:'14px',fontWeight:700,marginBottom:'16px'}},'Benchmark e alternativas'),
+        comps.length? R('div',{style:{display:'flex',flexDirection:'column',gap:'10px'}},
+          comps.map((c,i)=>R('div',{key:i,style:{display:'flex',justifyContent:'space-between',padding:'12px 14px',background:'#F6F3EE',borderRadius:'10px'}},
+            R('div',null, R('div',{style:{fontWeight:600,fontSize:'13px'}}, c.name||'Concorrente '+(i+1)), R('div',{style:{fontSize:'11.5px',color:'#8C857B'}}, 'Escopo '+(c.scope||'—'))),
+            R('div',{style:{fontFamily:'Space Grotesk',fontWeight:600}}, money(c.price))))) : R('div',{style:{fontSize:'13px',color:'#8C857B'}},'Nenhum concorrente registrado. A recomendação não usa mercado como âncora.'),
+        R('div',{style:{marginTop:'16px',padding:'14px 16px',background:'#EEF1F3',borderRadius:'10px',fontSize:'12.5px',color:'#4E6072',lineHeight:1.6}},
+          comps.length? 'Preço mediano concorrente: '+money(r.marketMed)+'. A VendaMais tende a incluir mais escopo, senioridade e implementação — normalize antes de comparar.' : 'Concorrência não reduz automaticamente o preço. Registre referências para habilitar a âncora de mercado.')));
+    }
+
+    if (tab==='pagamento') {
+      const price = r.proposed, inst = (d.payment?.installments||[]);
+      const annual = (d.payment?.annualRate||0)/100, daily = Math.pow(1+annual,1/365)-1;
+      return R('div',null,
+        card(R('div',null, R('div',{style:{fontSize:'14px',fontWeight:700,marginBottom:'14px'}},'Parcelas e valor presente'),
+          R('table',{style:{width:'100%',borderCollapse:'collapse',fontSize:'13px'}},
+            R('thead',null, R('tr',{style:{fontSize:'11px',color:'#9A938A',textTransform:'uppercase'}}, ['Parcela','%','Dias','Nominal','Valor presente'].map((h,i)=>R('th',{key:i,style:{textAlign:i>1?'right':'left',padding:'0 6px 10px'}},h)))),
+            R('tbody',null, inst.map((p,i)=>{
+              const nom = price*(p.pct||0)/100, pv = nom/Math.pow(1+daily, p.days||0);
+              return R('tr',{key:i,style:{borderTop:'1px solid #EFEBE4'}},
+                R('td',{style:{padding:'9px 6px'}},'Parcela '+(i+1)), R('td',{style:{padding:'9px 6px'}}, (p.pct||0)+'%'),
+                R('td',{style:{padding:'9px 6px',textAlign:'right',fontFamily:'Space Grotesk'}}, p.days), R('td',{style:{padding:'9px 6px',textAlign:'right',fontFamily:'Space Grotesk'}}, money(nom)),
+                R('td',{style:{padding:'9px 6px',textAlign:'right',fontFamily:'Space Grotesk',color:'#4E6072'}}, money(pv)));
+            })))),
+        ),
+        R('div',{style:{height:'14px'}}),
+        R('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'14px'}},
+          card(stat('Valor nominal', money(price))),
+          card(stat('Valor presente', money(price*r.pvFrac), '#4E6072')),
+          card(stat('Custo do prazo', money(price*r.financialFrac), '#C98A16'))));
+    }
+
+    if (tab==='cenarios') {
+      const mk = (name, laborM, contM, valM, color) => {
+        const dd = structuredClone(d);
+        dd.team = dd.team.map(m=>{ const nm=structuredClone(m); Object.keys(nm.hours).forEach(k=>nm.hours[k]=Math.round(nm.hours[k]*laborM)); return nm; });
+        dd.costs.contingencyPct = (dd.costs.contingencyPct||0)*contM;
+        dd.value.impact12m = (dd.value.impact12m||0)*valM;
+        const rr = this.compute(dd);
+        return { name, rr, color };
+      };
+      const scen = [ mk('Conservador',1.15,1.5,0.7,'#C98A16'), mk('Esperado',1,1,1,'#DA5B18'), mk('Eficiente',0.85,0.6,1.15,'#3E8E5A') ];
+      return R('div',{style:{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'14px'}},
+        scen.map((s,i)=>card(R('div',null,
+          R('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'14px'}}, R('span',{style:{width:'9px',height:'9px',borderRadius:'50%',background:s.color}}), R('span',{style:{fontSize:'14px',fontWeight:700}},s.name)),
+          stat('Recomendado', money(s.rr.recommended)), R('div',{style:{height:'12px'}}),
+          stat('Margem', pct(s.rr.marginRec,0), '#2F7A4B'), R('div',{style:{height:'12px'}}),
+          stat('Custo econômico', money(s.rr.economicCost)), R('div',{style:{height:'12px'}}),
+          stat('Piso', money(s.rr.floor), '#C4432B')), i===1?{border:'1.5px solid #DA5B18'}:{})));
+    }
+
+    if (tab==='flex') {
+      const price = flex, m = r.marginAt(price), net = r.netAt(price), pv = price*r.pvFrac;
+      const distFloor = (price-r.floor)/r.floor;
+      const discount = (r.recommended-price)/r.recommended;
+      let alert = { t:'Desconto cosmético', c:'#3E8E5A', bg:'#E7F0EA', msg:'Pequeno impacto na margem.' };
+      if (price < r.floor) alert = { t:'Abaixo do piso', c:'#C4432B', bg:'#F7E4E0', msg:'Exige justificativa e aprovação executiva. O projeto não cobre custos e margem mínima.' };
+      else if (price < r.sustainable) alert = { t:'Desconto destrutivo', c:'#C98A16', bg:'#FBF0DA', msg:'Abaixo do sustentável. Exige contrapartida e aprovação da unidade.' };
+      else if (discount > ((this.state.params?.discountLimit ?? 8)/100)) alert = { t:'Desconto relevante', c:'#C98A16', bg:'#FBF0DA', msg:'Acima do limite de '+(this.state.params?.discountLimit ?? 8)+'% sem aprovação. Negocie contrapartida econômica ou operacional.' };
+      return R('div',{style:{display:'grid',gridTemplateColumns:'1.3fr 1fr',gap:'16px'}},
+        card(R('div',null, R('div',{style:{fontSize:'14px',fontWeight:700,marginBottom:'6px'}},'Calculadora de flexibilidade'),
+          R('div',{style:{fontFamily:'Space Grotesk',fontSize:'30px',fontWeight:600,color:'#23201D',marginBottom:'2px'}},money(price)),
+          R('div',{style:{fontSize:'12px',color:discount>0?'#C4432B':'#3E8E5A',marginBottom:'16px'}}, discount>0? pct(discount,1)+' abaixo do recomendado' : 'no recomendado ou acima'),
+          R('input',{type:'range',min:Math.round(r.floor*0.85),max:Math.round(r.premiumTop),value:price,onChange:self.setFlex,style:{width:'100%',accentColor:'#DA5B18'}}),
+          R('div',{style:{display:'flex',justifyContent:'space-between',fontSize:'10.5px',color:'#9A938A',marginTop:'4px',fontFamily:'Space Grotesk'}}, R('span',null,'piso '+money(r.floor)), R('span',null,'premium '+money(r.premiumTop))),
+          R('div',{style:{marginTop:'16px',padding:'13px 15px',borderRadius:'11px',background:alert.bg}}, R('div',{style:{fontWeight:700,color:alert.c,fontSize:'13px',marginBottom:'3px'}},alert.t), R('div',{style:{fontSize:'12px',color:alert.c,lineHeight:1.5}},alert.msg)))),
+        card(R('div',null, R('div',{style:{fontSize:'13px',fontWeight:700,marginBottom:'14px'}},'Impacto instantâneo'),
+          R('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'16px'}},
+            stat('Margem', pct(m,1), m<r.sol.mMin?'#C4432B':m<r.sol.mTarget?'#C98A16':'#2F7A4B'),
+            stat('Receita líquida', money(net)), stat('Valor presente', money(pv)),
+            stat('Distância do piso', pct(distFloor,0), distFloor<0?'#C4432B':'#4A453E')),
+          R('div',{style:{marginTop:'16px',padding:'12px',background:'#F6F3EE',borderRadius:'9px',fontSize:'12px',color:'#6B655E',lineHeight:1.6}},'Não conceda desconto sem contrapartida: redução de escopo, menor senioridade, mais volume, contrato mais longo, pagamento antecipado ou case autorizado.'))));
+    }
+
+    if (tab==='premissas') {
+      const issues = [];
+      if ((d.value?.impact12m||0)===0) issues.push(['Valor econômico não informado','Confiança reduzida; recomendação apoiada em custo e histórico.','#C98A16']);
+      if (!(d.market?.competitors||[]).length) issues.push(['Sem referências de mercado','Âncora de mercado desativada.','#C98A16']);
+      if (r.byActivity.travel>0 && d.scope?.format!=='presencial') issues.push(['Deslocamento sem formato presencial','Verifique horas de deslocamento.','#C98A16']);
+      if (r.marginRec < r.sol.mMin) issues.push(['Margem abaixo do mínimo','Exige aprovação.','#C4432B']);
+      if ((d.scope?.durationUnit||'meses')==='meses' && (d.scope?.duration||0)>12) issues.push(['Projeto longo','Sugira cláusula de reajuste anual (IPCA).','#C98A16']);
+      const totPctInst = (d.payment?.installments||[]).reduce((a,x)=>a+(Number(x.pct)||0),0);
+      if (Math.round(totPctInst) !== 100) issues.push(['Parcelas somam '+totPctInst+'%','A soma das parcelas deve ser 100%. Ajuste na etapa 4.','#C4432B']);
+      const deduct = r.taxRate + r.commEff + r.financialFrac;
+      if (deduct > 0.45) issues.push(['Deduções consomem '+pct(deduct,0)+' do preço','Impostos + comissões + prazo estão altos. Revise comissões e condições de pagamento.','#C98A16']);
+      if (r.diffCount>0 && !r.hasEvidence) issues.push(['Premium de marca sem evidência','Registre justificativa ou case na etapa 5 para sustentar a diferenciação.','#C98A16']);
+      if (!issues.length) issues.push(['Sem alertas críticos','Os dados informados são consistentes.','#3E8E5A']);
+      return card(R('div',null, R('div',{style:{fontSize:'14px',fontWeight:700,marginBottom:'16px'}},'Premissas, alertas e riscos'),
+        R('div',{style:{display:'flex',flexDirection:'column',gap:'10px'}},
+          issues.map((it,i)=>R('div',{key:i,style:{display:'flex',gap:'11px',padding:'12px 14px',background:'#F6F3EE',borderRadius:'10px',borderLeft:`3px solid ${it[2]}`}},
+            R('div',null, R('div',{style:{fontWeight:700,fontSize:'13px',color:'#23201D'}},it[0]), R('div',{style:{fontSize:'12px',color:'#6B655E',marginTop:'2px'}},it[1])))),
+        R('div',{style:{marginTop:'16px',fontSize:'12px',color:'#8C857B'}},'Premissas automáticas em uso: fator CLT 1,8 · utilização produtiva 65% · overhead '+(d.costs?.overheadPct||0)+'% · taxa financeira '+(d.payment?.annualRate||0)+'% ('+(d.payment?.rateSource||'CDI')+').'))));
+    }
+    return null;
+  }
+
+  // ---------- PARAMS ----------
+  paramInput = (e) => {
+    const k = e.target.dataset.k;
+    const v = e.target.value === '' ? DEFAULT_PARAMS[k] : Number(e.target.value);
+    this.setState(prev => ({ params: { ...prev.params, [k]: v } }), this.persist);
+  };
+  resetParams = () => { this.setState({ params: { ...DEFAULT_PARAMS } }, this.persist); };
+  renderParams() {
+    const R = React.createElement, self = this;
+    const P = this.state.params || DEFAULT_PARAMS;
+    const edited = Object.keys(DEFAULT_PARAMS).some(k => P[k] !== DEFAULT_PARAMS[k]);
+    const inp = (k) => R('div',{style:{display:'flex',alignItems:'center',gap:'6px'}},
+      R('input',{'data-k':k,type:'number',step:'0.01',value:P[k]??'',onChange:self.paramInput,style:{width:'96px',padding:'8px 10px',border:'1px solid '+(P[k]!==DEFAULT_PARAMS[k]?'#DA5B18':'#DDD8D0'),borderRadius:'8px',fontSize:'14px',fontFamily:'Space Grotesk',fontWeight:600,background:'#fff'}}),
+      P[k]!==DEFAULT_PARAMS[k] && R('span',{title:'Editado manualmente',style:{fontSize:'10px',fontWeight:700,color:'#B84812',background:'#FBEEE8',padding:'2px 7px',borderRadius:'10px'}},'manual'));
+    const card = (title, rows) => R('div',{style:{background:'#FBFAF7',border:'1px solid #E7E3DC',borderRadius:'14px',overflow:'hidden'}},
+      R('div',{style:{padding:'15px 20px',fontSize:'14px',fontWeight:700,borderBottom:'1px solid #EDE7DE'}},title),
+      R('div',null, rows.map((r,i)=>R('div',{key:i,style:{display:'grid',gridTemplateColumns:'1.5fr 1.1fr 1fr 1fr',padding:'10px 20px',fontSize:'13px',borderTop:i?'1px solid #EFEBE4':'none',alignItems:'center'}},
+        R('span',{style:{fontWeight:600,color:'#4A453E'}},r[0]),
+        inp(r[1]),
+        R('span',{style:{fontSize:'12px',color:'#8C857B'}},r[2]),
+        R('span',{style:{fontSize:'11px',color:'#9A938A'}},r[3])))));
+    return R('div',{style:{padding:'24px 30px 48px',maxWidth:'1100px',display:'flex',flexDirection:'column',gap:'16px'}},
+      R('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',gap:'16px'}},
+        R('div',{style:{flex:1,padding:'14px 18px',background:'#EEF1F3',borderRadius:'11px',fontSize:'12.5px',color:'#4E6072',lineHeight:1.6}},'Em produção, Selic, CDI e IPCA são atualizados automaticamente (Banco Central / IBGE), com valor, fonte e data registrados. Aqui você também pode editar qualquer número manualmente — valores editados ganham a marca "manual" e valem para as próximas precificações (os padrões de novas precificações: imposto, overhead, contingência, comissão, fator CLT, utilização e taxa).'),
+        edited && R('button',{onClick:self.resetParams,style:{background:'#FBFAF7',border:'1px solid #E7E3DC',color:'#4A453E',padding:'10px 16px',borderRadius:'9px',fontSize:'12.5px',fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}},'Restaurar padrões')),
+      card('Índices financeiros (% a.a.)', [
+        ['Selic (meta)','selic','Banco Central','Consulta: demo'],
+        ['CDI','cdi','B3 / referência','Consulta: demo'],
+        ['IPCA (12m)','ipca','IBGE','Consulta: demo'],
+        ['Custo de capital interno','capital','Financeiro VendaMais','Taxa padrão do prazo'],
+      ]),
+      card('Impostos e custos (%)', [
+        ['Imposto sobre serviços','taxRate','Padrão VendaMais','Novas precificações'],
+        ['Fator CLT carregado (×)','cltFactor','Financeiro','Novos profissionais'],
+        ['Utilização produtiva padrão','productiveRate','Financeiro','Novos profissionais'],
+        ['Overhead padrão','overheadPct','Financeiro','Sobre M.O.'],
+        ['Contingência padrão','contingencyPct','Financeiro','Sobre custos diretos'],
+      ]),
+      card('Política comercial (%)', [
+        ['Comissão padrão do vendedor','commDefault','Política','Novas precificações'],
+        ['Desconto sem aprovação (até)','discountLimit','Política','Acima: alerta e aprovação'],
+      ]));
+  }
+
+  // ---------- SETTINGS ----------
+  renderSettings() {
+    const R = React.createElement, self = this;
+    const cfg = this.state.config;
+    const card = (title, sub, kids) => R('div',{style:{background:'#FBFAF7',border:'1px solid #E7E3DC',borderRadius:'14px',padding:'20px 22px'}},
+      R('div',{style:{fontSize:'14px',fontWeight:700,marginBottom:'3px'}},title),
+      R('div',{style:{fontSize:'12px',color:'#8C857B',marginBottom:'14px'}},sub), kids);
+    const fld = (k, lbl, ph, type) => R('div',{style:{marginBottom:'12px'}},
+      R('div',{style:{fontSize:'12px',fontWeight:700,color:'#4A453E',marginBottom:'6px'}},lbl),
+      R('input',{'data-k':k,type:type||'text',value:cfg[k]??'',placeholder:ph,onChange:self.configInput,autoComplete:'off',style:{width:'100%',padding:'10px 12px',border:'1px solid #DDD8D0',borderRadius:'9px',fontSize:'13px',background:'#fff',fontFamily:'Space Grotesk'}}));
+    return R('div',{style:{padding:'24px 30px 48px',maxWidth:'860px',display:'flex',flexDirection:'column',gap:'16px'}},
+      card('Supabase — banco de dados na nuvem','Precificações, templates e parâmetros passam a sincronizar entre navegadores e usuários.',
+        R('div',null,
+          fld('supabaseUrl','URL do projeto','https://xxxx.supabase.co'),
+          fld('supabaseKey','Chave anon (public)','eyJhbGciOi…','password'),
+          R('div',{style:{display:'flex',gap:'10px',alignItems:'center'}},
+            R('button',{onClick:self.testConnection,style:{background:'#DA5B18',color:'#fff',border:'none',padding:'9px 16px',borderRadius:'9px',fontSize:'13px',fontWeight:700,cursor:'pointer'}},'Testar conexão e sincronizar'),
+            this.state.sbStatus && R('span',{style:{fontSize:'12.5px',fontWeight:700,color:this.state.sbStatus==='ok'?'#2F7A4B':'#C4432B'}}, this.state.sbStatus==='ok'?'✓ Conectado e sincronizado':this.state.sbStatus)),
+          R('div',{style:{marginTop:'12px',padding:'11px 13px',background:'#EEF1F3',borderRadius:'9px',fontSize:'11.5px',color:'#4E6072',lineHeight:1.6}},'Requer a tabela vm_state criada no Supabase — o script está no arquivo supabase/schema.sql do projeto (passo a passo no README).'))),
+      card('OpenAI — geração de texto com IA','Habilita o botão "Gerar argumentação com IA" no relatório interno.',
+        R('div',null,
+          fld('openaiKey','API Key','sk-…','password'),
+          R('div',{style:{padding:'11px 13px',background:'#FBF0DA',borderRadius:'9px',fontSize:'11.5px',color:'#8A6A1F',lineHeight:1.6}},'Atenção: a chave fica no navegador e nas chamadas diretas à OpenAI. Para uso amplo em produção, recomenda-se um proxy no servidor (ver README).'))),
+      card('Segurança','Controle de abertura de salários e nomes.',
+        fld('adminPass','Senha do administrador (revelar salários)','defina uma senha forte','password')));
+  }
+
+  genNarrative = async () => {
+    const cfg = this.state.config;
+    if (!cfg.openaiKey) { alert('Configure a API Key da OpenAI em Configurações.'); return; }
+    const s = this.activeSession(); if (!s) return;
+    const r = this.compute(s.draft);
+    this.setState({ aiBusy:true });
+    try {
+      const body = { model:'gpt-4o-mini', temperature:0.4, messages:[
+        { role:'system', content:'Você é especialista em pricing de serviços profissionais B2B. Escreva em português do Brasil, tom executivo, 2 parágrafos curtos, sem títulos e sem citar nomes de pessoas ou salários individuais.' },
+        { role:'user', content:'Escreva a justificativa executiva do preço para um relatório interno. Dados: solução '+s.solution+'; cliente '+s.client+'; preço recomendado '+money(r.recommended)+'; preço proposto '+money(r.proposed)+'; custo econômico '+money(r.economicCost)+'; margem no proposto '+pct(r.marginProp,1)+'; piso '+money(r.floor)+'; faixa premium '+money(r.premiumTop)+'; horas totais '+Math.round(r.totalHours)+'; valor econômico estimado p/ cliente '+money(r.economicValue)+'; âncoras usadas: '+r.elig.map(a=>a.name).join(', ')+'.' } ] };
+      const resp = await fetch('https://api.openai.com/v1/chat/completions', { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:'Bearer '+cfg.openaiKey }, body:JSON.stringify(body) });
+      const j = await resp.json();
+      const txt = j.choices?.[0]?.message?.content;
+      if (!txt) throw new Error(j.error?.message || 'resposta vazia');
+      this.setState(prev => ({ aiBusy:false, sessions: prev.sessions.map(x => x.id===s.id ? { ...x, draft:{ ...x.draft, _aiNarrative:txt } } : x) }), this.persist);
+    } catch(e) { this.setState({ aiBusy:false }); alert('Erro na OpenAI: '+e.message); }
+  };
+
+  // ---------- REPORT ----------
+  renderReport() {
+    const s = this.activeSession(); if (!s) return React.createElement('div',{style:{padding:'40px'}},'Abra uma precificação para gerar o relatório.');
+    const R = React.createElement, self = this;
+    const d = s.draft, r = this.compute(d);
+    const rv = this.state.reportView, unlocked = this.state.salariesUnlocked;
+    const canSee = ['admin','financeiro'].includes(this.state.role) || unlocked;
+    const commercial = rv==='comercial';
+
+    const sec = (n, title, kids) => R('div',{style:{marginBottom:'26px'}}, R('div',{style:{display:'flex',alignItems:'center',gap:'10px',marginBottom:'12px',paddingBottom:'8px',borderBottom:'2px solid #DA5B18'}}, R('span',{style:{fontFamily:'Space Grotesk',fontSize:'13px',fontWeight:700,color:'#DA5B18'}},n), R('span',{style:{fontSize:'15px',fontWeight:800}},title)), kids);
+    const kv = (l,v,c) => R('div',{style:{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid #EFEBE4',fontSize:'13px'}}, R('span',{style:{color:'#6B655E'}},l), R('span',{style:{fontFamily:'Space Grotesk',fontWeight:600,color:c||'#23201D'}},v));
+
+    const toolbar = R('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px',flexWrap:'wrap',gap:'12px'}},
+      R('div',{style:{display:'flex',gap:'6px',background:'#EDE7DE',padding:'4px',borderRadius:'10px'}},
+        R('button',{'data-v':'interno',onClick:self.setReportView,style:{padding:'8px 16px',border:'none',borderRadius:'7px',fontSize:'13px',fontWeight:700,cursor:'pointer',background:!commercial?'#FBFAF7':'transparent',color:!commercial?'#23201D':'#8C857B'}},'Relatório interno'),
+        R('button',{'data-v':'comercial',onClick:self.setReportView,style:{padding:'8px 16px',border:'none',borderRadius:'7px',fontSize:'13px',fontWeight:700,cursor:'pointer',background:commercial?'#FBFAF7':'transparent',color:commercial?'#23201D':'#8C857B'}},'Documento comercial')),
+      R('div',{style:{display:'flex',gap:'9px',alignItems:'center'}},
+        !commercial && !canSee && R('button',{onClick:self.unlockSalaries,style:{background:'#FBFAF7',border:'1px solid #E7E3DC',padding:'8px 13px',borderRadius:'9px',fontSize:'12.5px',fontWeight:600,cursor:'pointer',color:'#B84812'}},'🔒 Revelar nomes e salários'),
+        R('button',{onClick:()=>window.print(),style:{background:'#DA5B18',color:'#fff',border:'none',padding:'9px 16px',borderRadius:'9px',fontSize:'13px',fontWeight:700,cursor:'pointer'}},'Exportar PDF ↓')));
+
+    const page = commercial ? this.reportCommercial(s,r,d) : this.reportInternal(s,r,d,canSee);
+    return R('div',{style:{padding:'22px 30px 60px',maxWidth:'880px'}}, toolbar,
+      R('div',{style:{background:'#fff',border:'1px solid #E7E3DC',borderRadius:'14px',padding:'44px 48px',boxShadow:'0 1px 3px rgba(0,0,0,0.04)'}}, page));
+  }
+
+  reportInternal(s, r, d, canSee) {
+    const R = React.createElement;
+    const sec = (n, title, kids) => R('div',{style:{marginBottom:'26px'}}, R('div',{style:{display:'flex',alignItems:'center',gap:'10px',marginBottom:'12px',paddingBottom:'8px',borderBottom:'2px solid #DA5B18'}}, R('span',{style:{fontFamily:'Space Grotesk',fontSize:'13px',fontWeight:700,color:'#DA5B18'}},n), R('span',{style:{fontSize:'15px',fontWeight:800}},title)), kids);
+    const kv = (l,v,c) => R('div',{style:{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:'1px solid #EFEBE4',fontSize:'13px'}}, R('span',{style:{color:'#6B655E'}},l), R('span',{style:{fontFamily:'Space Grotesk',fontWeight:600,color:c||'#23201D'}},v));
+    return R('div',null,
+      R('div',{style:{marginBottom:'30px'}},
+        R('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'start'}},
+          R('div',null, R('div',{style:{fontSize:'11px',fontWeight:700,letterSpacing:'0.16em',color:'#DA5B18',textTransform:'uppercase'}},'VM Pricing Intelligence · Relatório interno'),
+            R('div',{style:{fontSize:'24px',fontWeight:800,marginTop:'8px'}},s.title),
+            R('div',{style:{fontSize:'13px',color:'#8C857B',marginTop:'4px'}}, s.client+' · '+s.solution+' · '+s.unit)),
+          R('div',{style:{textAlign:'right',fontSize:'12px',color:'#8C857B',lineHeight:1.7}}, 'Responsável: '+s.owner, R('br'), 'Versão '+(s.version||1)+' · '+new Date(s.createdAt).toLocaleDateString('pt-BR'), R('br'), 'Status: '+(STATUS[s.status]?.label||s.status)))),
+      sec('01','Resumo executivo', R('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0 30px'}},
+        kv('Piso absoluto', money(r.floor), '#C4432B'), kv('Preço sustentável', money(r.sustainable)),
+        kv('Preço recomendado', money(r.recommended), '#DA5B18'), kv('Faixa premium', money(r.premiumTop), '#2F7A4B'),
+        kv('Preço proposto', money(r.proposed)), kv('Margem estimada', pct(r.marginRec,1), '#2F7A4B'),
+        kv('Valor presente', money(r.pvRec)), kv('Grau de confiança', r.confidence+'/100'))),
+      sec('02','Por que este é o preço', R('div',null,
+        d._aiNarrative
+          ? d._aiNarrative.split('\n').filter(Boolean).map((p,i)=>R('p',{key:i,style:{fontSize:'13.5px',lineHeight:1.75,color:'#3A362F',marginBottom:'8px'}},p))
+          : R('p',{style:{fontSize:'13.5px',lineHeight:1.75,color:'#3A362F'}},
+            'O preço recomendado de '+money(r.recommended)+' equilibra o custo econômico da entrega ('+money(r.economicCost)+'), a margem-alvo de '+pct(r.sol.mTarget,0)+' e o valor provável para o cliente. Foram consideradas '+Math.round(r.totalHours).toLocaleString('pt-BR')+' horas de trabalho, incluindo horas invisíveis de preparação, gestão e deslocamento. '+(r.valuePrice>0?'O valor econômico estimado sustenta disposição a pagar acima do custo. ':'Há espaço controlado para flexibilização mediante redução de escopo ou melhores condições de pagamento.')),
+        R('button',{onClick:this.genNarrative,disabled:this.state.aiBusy,style:{marginTop:'6px',background:'#FDF3EC',border:'1px solid #F4D8C8',color:'#B84812',padding:'7px 13px',borderRadius:'8px',fontSize:'12px',fontWeight:700,cursor:'pointer'}}, this.state.aiBusy?'Gerando…':(d._aiNarrative?'↻ Regerar argumentação com IA':'✨ Gerar argumentação com IA')))),
+      sec('03','Composição econômica', R('div',null,
+        kv('Mão de obra direta', money(r.labor)), kv('Fornecedores', money(r.suppliers)), kv('Tecnologia', money(r.tech)),
+        kv('Materiais', money(r.materials)), kv('Overhead', money(r.overhead)), kv('Contingência', money(r.contingency), '#C98A16'),
+        kv('Impostos ('+pct(r.taxRate,0)+')', money(r.proposed*r.taxRate), '#C4432B'), kv('Comissões', money(r.proposed*r.commEff), '#C4432B'),
+        kv('Custo financeiro do prazo', money(r.proposed*r.financialFrac), '#C98A16'), kv('Margem no preço proposto', money(r.netAt(r.proposed)-r.economicCost), (r.netAt(r.proposed)-r.economicCost)<0?'#C4432B':'#2F7A4B'))),
+      sec('04','Horas por profissional', canSee ?
+        R('div',null, (d.team||[]).map((m,i)=>{ const hc=this.memberHourly(m), h=this.memberHours(m); return kv(m.roleLabel+' ('+m.contractType.toUpperCase()+')', h+'h · '+money(hc)+'/h · '+money(hc*h)); })) :
+        R('div',null,
+          R('div',{style:{padding:'14px 16px',background:'#F6F3EE',borderRadius:'10px',fontSize:'12.5px',color:'#6B655E',marginBottom:'12px',lineHeight:1.6}},'🔒 Nomes e remunerações estão consolidados e ocultos. A abertura exige senha do administrador e fica registrada em auditoria.'),
+          (d.team||[]).map((m,i)=>kv('Profissional '+(i+1), this.memberHours(m)+'h · custo consolidado')))),
+      sec('05','Riscos e premissas', R('div',{style:{fontSize:'13px',color:'#3A362F',lineHeight:1.7}},
+        'Premissas automáticas: fator CLT 1,8 · utilização produtiva 65% · overhead '+(d.costs?.overheadPct||0)+'% · taxa financeira '+(d.payment?.annualRate||0)+'%. '+
+        ((d.value?.impact12m||0)===0?'Valor econômico não informado — confiança reduzida. ':'')+(((d.scope?.durationUnit||'meses')==='meses'&&(d.scope?.duration||0)>12)?'Projeto acima de 12 meses: recomenda-se cláusula de reajuste (IPCA). ':''))),
+      sec('06','Conclusão recomendada', R('p',{style:{fontSize:'13.5px',lineHeight:1.75,color:'#3A362F',fontStyle:'italic'}},
+        'Recomenda-se apresentar '+money(r.recommended)+' como investimento de referência, com faixa negociável até o piso de '+money(r.floor)+' apenas mediante contrapartida e aprovação. Abaixo do piso, o projeto compromete a rentabilidade e requer decisão executiva.')));
+  }
+
+  reportCommercial(s, r, d) {
+    const R = React.createElement;
+    const sec = (n, title, kids) => R('div',{style:{marginBottom:'26px'}}, R('div',{style:{display:'flex',alignItems:'center',gap:'10px',marginBottom:'12px',paddingBottom:'8px',borderBottom:'2px solid #DA5B18'}}, R('span',{style:{fontFamily:'Space Grotesk',fontSize:'13px',fontWeight:700,color:'#DA5B18'}},n), R('span',{style:{fontSize:'15px',fontWeight:800}},title)), kids);
+    const base = r.proposed || r.recommended;
+    const good = Math.round(base*0.72), better = Math.round(base), best = Math.round(Math.max(r.premiumTop, base*1.25));
+    const opt = (name, price, desc, hi) => R('div',{style:{flex:1,padding:'20px',borderRadius:'13px',border:`1.5px solid ${hi?'#DA5B18':'#E2DDD5'}`,background:hi?'#FDF3EC':'#fff'}},
+      hi&&R('div',{style:{fontSize:'10.5px',fontWeight:700,color:'#DA5B18',marginBottom:'6px'}},'RECOMENDADA'),
+      R('div',{style:{fontSize:'15px',fontWeight:800,marginBottom:'4px'}},name),
+      R('div',{style:{fontFamily:'Space Grotesk',fontSize:'22px',fontWeight:600,marginBottom:'8px'}},money(price)),
+      R('div',{style:{fontSize:'12px',color:'#6B655E',lineHeight:1.5}},desc));
+    return R('div',null,
+      R('div',{style:{marginBottom:'30px'}},
+        R('div',{style:{fontSize:'11px',fontWeight:700,letterSpacing:'0.16em',color:'#DA5B18',textTransform:'uppercase'}},'Proposta VendaMais'),
+        R('div',{style:{fontSize:'24px',fontWeight:800,marginTop:'8px'}},s.solution+' — '+s.client),
+        R('div',{style:{fontSize:'13px',color:'#8C857B',marginTop:'4px'}}, new Date(s.createdAt).toLocaleDateString('pt-BR'))),
+      sec('01','A solução', R('p',{style:{fontSize:'13.5px',lineHeight:1.75,color:'#3A362F'}},
+        'Programa '+s.solution.toLowerCase()+' desenhado para o contexto do '+s.client+', combinando a metodologia, a experiência e os cases da VendaMais para gerar resultado comercial mensurável.')),
+      sec('02','Opções de investimento', R('div',{style:{display:'flex',gap:'12px'}},
+        opt('Essencial', good, 'Resolve o núcleo do problema com escopo enxuto.'),
+        opt('Recomendada', better, 'Melhor equilíbrio entre resultado, profundidade e investimento.', true),
+        opt('Transformacional', best, 'Adiciona velocidade, senioridade, implementação e sustentação.'))),
+      sec('03','Condições', R('div',{style:{fontSize:'13px',color:'#3A362F',lineHeight:1.8}},
+        'Investimento recomendado: '+money(base)+'. '+
+        'Condições de pagamento conforme parcelamento acordado. Passagens, alimentação e hospedagem cobradas à parte, quando aplicável. Proposta válida por 30 dias.')),
+      R('div',{style:{marginTop:'20px',padding:'14px 16px',background:'#F6F3EE',borderRadius:'10px',fontSize:'11.5px',color:'#8C857B',lineHeight:1.6}},'Este documento não contém custos internos, salários, margens ou comissões. Destinado ao cliente.'));
+  }
+}
+</script>
+</body>
+</html>
