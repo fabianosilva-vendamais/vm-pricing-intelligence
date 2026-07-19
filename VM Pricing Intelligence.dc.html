@@ -31,6 +31,21 @@
   }
 </style>
 </helmet>
+<sc-if value="{{ appLocked }}" hint-placeholder-val="{{ false }}">
+  <div style="height:100vh; width:100%; display:flex; align-items:center; justify-content:center; background:#211E1B;">
+    <div style="width:400px; background:#FBFAF7; border-radius:18px; padding:38px 40px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+      <div style="width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg,#E8631A,#C4432B); display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
+        <span style="font-family:'Space Grotesk'; font-weight:700; color:#fff; font-size:26px;">V</span>
+      </div>
+      <div style="font-size:18px; font-weight:800; color:#23201D;">VM Pricing Intelligence</div>
+      <div style="font-size:12.5px; color:#8C857B; margin:6px 0 20px; line-height:1.6;">Acesso restrito. Digite a senha do sistema para entrar.</div>
+      <input type="password" value="{{ appPassTry }}" placeholder="Senha de acesso" onChange="{{ appPassInput }}" onKeyDown="{{ appPassKey }}" autocomplete="off" style="width:100%; padding:12px 14px; border:1.5px solid {{ appPassBorder }}; border-radius:10px; font-size:14px; background:#fff; text-align:center; font-family:'Space Grotesk'; margin-bottom:10px;">
+      <div style="font-size:12px; font-weight:700; color:#C4432B; min-height:18px; margin-bottom:6px;">{{ appPassError }}</div>
+      <button onClick="{{ appPassSubmit }}" style="width:100%; background:#DA5B18; color:#fff; border:none; padding:12px; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer;">Entrar no sistema</button>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ appUnlocked }}" hint-placeholder-val="{{ true }}">
 <div style="display:flex; height:100vh; width:100%; overflow:hidden; background:#F3F1EC;">
 
   <aside style="width:256px; flex:0 0 256px; background:#211E1B; color:#C9C3BA; display:flex; flex-direction:column; height:100vh;">
@@ -317,6 +332,7 @@
     </main>
   </div>
 </div>
+</sc-if>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:&quot;100%&quot;}}">
 const money = (v) => 'R$ ' + Math.round(v||0).toLocaleString('pt-BR');
@@ -383,7 +399,7 @@ const METHODS = [
   { name:'Margem de contribuição', tag:'Disciplina financeira', desc:'Mede o que efetivamente sobra após todas as deduções e custos variáveis atribuíveis. É a métrica que dispara alertas de desconto destrutivo e aprovações abaixo do piso.', formula:'Margem = (Receita líquida − Custo econômico) ÷ Preço', where:'Indicadores, calculadora de flexibilidade e gatilhos de aprovação.' },
 ];
 
-const DEFAULT_CONFIG = { supabaseUrl:'', supabaseKey:'', openaiKey:'', adminPass:'admin' };
+const DEFAULT_CONFIG = { supabaseUrl:'', supabaseKey:'', openaiKey:'', adminPass:'admin', appPass:'VendaMais2026#' };
 const loadConfig = () => { try { return { ...DEFAULT_CONFIG, ...(JSON.parse(localStorage.getItem('vmpi_config')||'{}')) }; } catch(e){ return { ...DEFAULT_CONFIG }; } };
 
 const DEFAULT_PARAMS = {
@@ -397,6 +413,15 @@ class Component extends DCLogic {
     view: 'dashboard', role: 'diretor', sessions: [], draft: null, resultTab: 'resumo',
     activeSessionId: null, flexPrice: null, salariesUnlocked: false, reportView: 'interno', paramTab: 'indices',
     params: { ...DEFAULT_PARAMS }, config: loadConfig(), sbStatus: null, aiBusy: false,
+    appUnlocked: (() => { try { return sessionStorage.getItem('vmpi_auth')==='1'; } catch(e){ return false; } })(), appPassTry:'', appPassError:null,
+  };
+  appPassInput = (e) => { this.setState({ appPassTry: e.target.value, appPassError:null }); };
+  appPassKey = (e) => { if (e.key==='Enter') this.appPassSubmit(); };
+  appPassSubmit = () => {
+    if (this.state.appPassTry === (this.state.config.appPass || 'VendaMais2026#')) {
+      try { sessionStorage.setItem('vmpi_auth','1'); } catch(e){}
+      this.setState({ appUnlocked:true, appPassTry:'' });
+    } else this.setState({ appPassError:'Senha incorreta.' });
   };
 
   componentDidMount() {
@@ -619,7 +644,12 @@ class Component extends DCLogic {
   }
 
   // ---------- NAV ----------
-  go = (e) => { const k = e.currentTarget.dataset.key; if (k==='wizard' && !this.state.draft) { this.startNew(); return; } this.setState({ view: k }); };
+  go = (e) => {
+    const k = e.currentTarget.dataset.key;
+    if (k==='wizard' && !this.state.draft) { this.startNew(); return; }
+    if (k==='settings') { this.setState({ view:'settings', settingsUnlocked:false, settingsPassTry:'', settingsPassError:null }); return; }
+    this.setState({ view: k, settingsUnlocked:false });
+  };
   startNew = () => { this.setState({ view:'wizard', draft: this.blankDraft(), resultTab:'resumo' }); };
   next = () => {
     const d = this.state.draft; if (!d) return;
@@ -869,6 +899,9 @@ class Component extends DCLogic {
     const modeBtn = (active) => `padding:8px 16px; border:none; border-radius:7px; font-size:13px; font-weight:700; cursor:pointer; background:${active?'#FBFAF7':'transparent'}; color:${active?'#23201D':'#8C857B'}; box-shadow:${active?'0 1px 2px rgba(0,0,0,0.08)':'none'};`;
 
     const out = {
+      appLocked: !st.appUnlocked, appUnlocked: st.appUnlocked, appPassTry: st.appPassTry||'', appPassError: st.appPassError||'',
+      appPassBorder: st.appPassError ? '#C4432B' : '#DDD8D0',
+      appPassInput: this.appPassInput, appPassKey: this.appPassKey, appPassSubmit: this.appPassSubmit,
       navItems: nav.map(n => ({ ...n, style: this.navStyle(n.key) })),
       go: this.go, startNew: this.startNew, onFieldInput: this.onFieldInput, onPick: this.onPick, openSession: this.openSession,
       role: st.role, roleName: ROLE_NAMES[st.role], roleInitials: ROLE_NAMES[st.role].split(' ').map(w=>w[0]).slice(0,2).join(''),
@@ -1406,9 +1439,24 @@ class Component extends DCLogic {
   }
 
   // ---------- SETTINGS ----------
+  settingsPassInput = (e) => { this.setState({ settingsPassTry: e.target.value, settingsPassError:null }); };
+  settingsPassSubmit = () => {
+    if (this.state.settingsPassTry === (this.state.config.adminPass || 'admin')) this.setState({ settingsUnlocked:true, settingsPassTry:'' });
+    else this.setState({ settingsPassError:'Senha incorreta.' });
+  };
   renderSettings() {
     const R = React.createElement, self = this;
     const cfg = this.state.config;
+    if (!this.state.settingsUnlocked) {
+      return R('div',{style:{padding:'60px 30px',display:'flex',justifyContent:'center'}},
+        R('div',{style:{background:'#FBFAF7',border:'1px solid #E7E3DC',borderRadius:'16px',padding:'34px 38px',width:'400px',textAlign:'center'}},
+          R('div',{style:{fontSize:'30px',marginBottom:'10px'}},'🔒'),
+          R('div',{style:{fontSize:'16px',fontWeight:800,marginBottom:'6px'}},'Área restrita do administrador'),
+          R('div',{style:{fontSize:'12.5px',color:'#8C857B',marginBottom:'18px',lineHeight:1.6}},'As Configurações guardam chaves de integração e a senha de salários. Digite a senha do administrador para continuar.'),
+          R('input',{type:'password',value:this.state.settingsPassTry||'',placeholder:'Senha do administrador',onChange:self.settingsPassInput,onKeyDown:(e)=>{ if(e.key==='Enter') self.settingsPassSubmit(); },autoComplete:'off',style:{width:'100%',padding:'11px 13px',border:'1.5px solid '+(this.state.settingsPassError?'#C4432B':'#DDD8D0'),borderRadius:'9px',fontSize:'14px',background:'#fff',textAlign:'center',fontFamily:'Space Grotesk',marginBottom:'10px'}}),
+          this.state.settingsPassError && R('div',{style:{fontSize:'12px',fontWeight:700,color:'#C4432B',marginBottom:'10px'}}, this.state.settingsPassError),
+          R('button',{onClick:self.settingsPassSubmit,style:{width:'100%',background:'#DA5B18',color:'#fff',border:'none',padding:'11px',borderRadius:'9px',fontSize:'14px',fontWeight:700,cursor:'pointer'}},'Entrar')));
+    }
     const card = (title, sub, kids) => R('div',{style:{background:'#FBFAF7',border:'1px solid #E7E3DC',borderRadius:'14px',padding:'20px 22px'}},
       R('div',{style:{fontSize:'14px',fontWeight:700,marginBottom:'3px'}},title),
       R('div',{style:{fontSize:'12px',color:'#8C857B',marginBottom:'14px'}},sub), kids);
@@ -1428,8 +1476,11 @@ class Component extends DCLogic {
         R('div',null,
           fld('openaiKey','API Key','sk-…','password'),
           R('div',{style:{padding:'11px 13px',background:'#FBF0DA',borderRadius:'9px',fontSize:'11.5px',color:'#8A6A1F',lineHeight:1.6}},'Atenção: a chave fica no navegador e nas chamadas diretas à OpenAI. Para uso amplo em produção, recomenda-se um proxy no servidor (ver README).'))),
-      card('Segurança','Controle de abertura de salários e nomes.',
-        fld('adminPass','Senha do administrador (revelar salários)','defina uma senha forte','password')));
+      card('Segurança','Senhas de acesso do sistema.',
+        R('div',null,
+          fld('appPass','Senha de acesso ao sistema (tela de entrada)','ex.: VendaMais2026#','password'),
+          fld('adminPass','Senha do administrador (revelar salários e abrir Configurações)','defina uma senha forte','password'),
+          R('div',{style:{padding:'11px 13px',background:'#EEF1F3',borderRadius:'9px',fontSize:'11.5px',color:'#4E6072',lineHeight:1.6}},'A senha de acesso vale por aba: ao fechar o navegador, será pedida de novo. Importante: essas senhas protegem a interface; para segurança forte com vários usuários, ative o login do Supabase (ver README).'))));
   }
 
   genNarrative = async () => {

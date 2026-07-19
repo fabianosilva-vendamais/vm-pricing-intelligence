@@ -35,25 +35,36 @@ Aplicação 100% front-end (HTML + JavaScript), sem build. Persistência local n
 3. **Deploy**. A URL final será algo como `https://vm-pricing-intelligence.vercel.app`.
 4. Cada `git push` na branch `main` publica automaticamente.
 
-### 3. Supabase
+### 3. Supabase (clique a clique)
 
-1. Acesse `supabase.com` → **New project** (guarde a senha do banco).
-2. No painel do projeto, abra **SQL Editor** → cole o conteúdo de `supabase/schema.sql` → **Run**.
-3. Em **Project Settings → API**, copie:
-   - **Project URL** (ex.: `https://xxxx.supabase.co`)
-   - **anon public key**
-4. Na aplicação publicada, abra **Configurações** (menu lateral):
-   - Cole a URL e a anon key → **Testar conexão e sincronizar**.
-   - Ao conectar, o selo lateral muda para "Supabase conectado" e os dados (precificações, templates e parâmetros) passam a sincronizar.
+1. Abra `supabase.com` → **Sign in** → entre com sua conta GitHub.
+2. Clique no botão verde **New project**.
+3. Preencha: **Name** `vm-pricing` · **Database Password** → "Generate a password" (copie e guarde) · **Region** `South America (São Paulo)`.
+4. **Create new project** e aguarde 1–2 minutos.
+5. Menu lateral → **SQL Editor** (ícone `>_`) → **New query**.
+6. Abra o arquivo `supabase/schema.sql` deste projeto no Bloco de Notas, copie tudo e cole na caixa do SQL Editor.
+7. Clique em **Run**. Deve aparecer "Success. No rows returned".
+8. Menu lateral → engrenagem **Project Settings** → **API**. Copie:
+   - **Project URL** (ex.: `https://abcdefgh.supabase.co`)
+   - **anon public** (texto longo começando com `eyJ`)
+9. Abra o sistema publicado na Vercel → menu **Configurações**.
+10. Cole a URL e a anon key nos campos do Supabase → **Testar conexão e sincronizar**.
+11. Confirme: aparece "✓ Conectado e sincronizado" e o selo lateral muda para **Supabase conectado**.
 
-### 4. OpenAI (opcional)
+### 4. OpenAI (opcional — clique a clique)
 
-1. Gere uma chave em `platform.openai.com/api-keys`.
-2. Cole em **Configurações → OpenAI**. Isso habilita o botão **"Gerar argumentação com IA"** no relatório interno.
+1. Abra `platform.openai.com` → crie conta ou entre.
+2. **Settings → Billing → Add payment method** (US$ 5 de crédito bastam; cada texto custa centavos).
+3. Menu **API keys** → **+ Create new secret key** → nome `vm-pricing` → **Create secret key**.
+4. Copie a chave na hora (começa com `sk-`) — ela só aparece uma vez.
+5. No sistema → **Configurações** → cole no campo "API Key" da seção OpenAI.
+6. Teste: abra uma precificação → **Relatório completo** → **✨ Gerar argumentação com IA**.
 
 ### 5. Senha do administrador
 
-Em **Configurações → Segurança**, defina a senha que libera a visualização de salários e nomes nos relatórios (padrão inicial: `admin` — troque antes de divulgar o link).
+1. No sistema → **Configurações** → **Segurança**.
+2. Troque `admin` por uma senha forte (salva ao digitar).
+3. Teste no relatório interno: "🔒 Revelar nomes e salários" deve exigir a nova senha.
 
 ## Avisos de produção
 
